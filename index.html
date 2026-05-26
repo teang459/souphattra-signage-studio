@@ -2847,25 +2847,53 @@ async function exportAsPNG() {
         showToast('ไลบรารี html2canvas ไม่พร้อม', 'error');
         return;
     }
-    showToast('กำลังสร้างภาพ PNG...');
-    const canvas = document.getElementById('sign-canvas');
-    const prevTransform = canvas.style.transform;
-    canvas.style.transform = 'none';
+    showToast('กำลังเตรียม PNG... กรุณารอสักครู่');
 
-    // Output dimensions = working canvas (1080×1920 portrait / 1920×1080 landscape)
+    // Wait for all fonts (Playfair, Phetsarath, etc.) to be loaded.
+    // Without this, the exported image renders with fallback fonts → looks wrong.
+    if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (e) {}
+    }
+
+    const canvas = document.getElementById('sign-canvas');
     const outW = state.orientation === 'portrait' ? 1080 : 1920;
     const outH = state.orientation === 'portrait' ? 1920 : 1080;
 
+    // Build a clean off-screen container so the rest of the page layout
+    // (sidebar, scroll wrappers, zoom transform) can't interfere with capture.
+    const stage = document.createElement('div');
+    stage.style.cssText = `
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: ${outW}px;
+        height: ${outH}px;
+        z-index: -1;
+        opacity: 0;
+        pointer-events: none;
+        overflow: visible;
+    `;
+
+    const clone = canvas.cloneNode(true);
+    clone.style.transform = 'none';
+    clone.style.position = 'relative';
+    clone.style.boxShadow = 'none';
+    clone.style.width = `${outW}px`;
+    clone.style.height = `${outH}px`;
+    stage.appendChild(clone);
+    document.body.appendChild(stage);
+
+    // Force a reflow so the clone has correct dimensions before capture
+    void clone.offsetHeight;
+
     try {
-        const snapshot = await html2canvas(canvas, {
+        const snapshot = await html2canvas(clone, {
             scale: 1,
             useCORS: true,
             backgroundColor: null,
             logging: false,
             width: outW,
             height: outH,
-            windowWidth: outW,
-            windowHeight: outH,
         });
         const link = document.createElement('a');
         link.download = `Souphattra_Sign_${outW}x${outH}_${Date.now()}.png`;
@@ -2876,8 +2904,7 @@ async function exportAsPNG() {
         console.error(err);
         showToast('เกิดข้อผิดพลาดในการ export', 'error');
     } finally {
-        canvas.style.transform = prevTransform;
-        updateZoom();
+        document.body.removeChild(stage);
     }
 }
 
