@@ -3031,6 +3031,23 @@ async function exportAsPNG() {
             cacheBust: false,
             skipFonts: true,
             backgroundColor: null,
+            // 1×1 transparent PNG — if any image still fails to load,
+            // it's replaced with this instead of aborting the entire export.
+            imagePlaceholder: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+            // Skip empty-src <img> tags (e.g. hotel-logo-img placeholder
+            // before a logo is uploaded) and elements hidden with display:none
+            // — they shouldn't end up in the export anyway.
+            filter: (node) => {
+                if (node.nodeType !== 1) return true;
+                if (node.tagName === 'IMG') {
+                    const src = node.getAttribute('src');
+                    if (!src || src.trim() === '') return false;
+                }
+                // Skip explicit display:none subtrees
+                const inlineDisplay = node.style && node.style.display;
+                if (inlineDisplay === 'none') return false;
+                return true;
+            },
             style: {
                 transform: 'none',
                 margin: '0',
