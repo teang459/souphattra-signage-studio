@@ -1,0 +1,2616 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Souphattra Signage Studio — Vientiane</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/earlyaccess/phetsaratott.css" rel="stylesheet">
+
+    <style>
+        /* ============================================================
+           DESIGN SYSTEM
+           ============================================================ */
+        :root {
+            --gold: #c5a880;
+            --gold-light: #dcc8a0;
+            --gold-dark: #a8895e;
+
+            --surface-0: #0a0a0a;
+            --surface-1: #111111;
+            --surface-2: #1a1a1a;
+            --surface-3: #232323;
+            --surface-4: #2d2d2d;
+            --surface-5: #3a3a3a;
+
+            --text-primary: #f5f5f5;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666;
+
+            --accent-amber: #f59e0b;
+            --accent-purple: #a855f7;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --accent-green: #10b981;
+
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+            --shadow-lg: 0 20px 60px rgba(0,0,0,0.55);
+
+            --brand-bg: #FAF9F5;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; height: 100%; }
+
+        body {
+            font-family: 'Inter', 'Noto Sans Lao', sans-serif;
+            color: var(--text-primary);
+            background: var(--surface-0);
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .hotel-title { font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif; letter-spacing: 0.15em; }
+        .serif-text  { font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif; }
+        .lao-text    { font-family: 'Phetsarath OT', 'Noto Sans Lao', sans-serif; }
+
+        button { font-family: inherit; }
+        a { color: var(--gold); text-decoration: none; }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--surface-4); }
+
+        /* ============================================================
+           APP SHELL
+           ============================================================ */
+        .app-shell {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        /* ============================================================
+           SIDEBAR
+           ============================================================ */
+        .sidebar {
+            width: 380px;
+            min-width: 380px;
+            background: var(--surface-1);
+            border-right: 1px solid var(--surface-3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .sidebar-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--surface-3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface-0);
+            flex-shrink: 0;
+        }
+
+        .brand-logo { display: flex; align-items: center; gap: 12px; }
+        .brand-mark {
+            width: 36px; height: 36px;
+            background: var(--gold);
+            color: var(--surface-0);
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.05) inset;
+        }
+        .brand-text h1 {
+            font-size: 13px; font-weight: 600;
+            letter-spacing: 0.04em; margin: 0; color: var(--text-primary);
+        }
+        .brand-text p {
+            font-size: 10px; color: var(--gold);
+            letter-spacing: 0.18em; text-transform: uppercase;
+            margin: 2px 0 0;
+        }
+        .version-badge {
+            font-size: 10px;
+            font-family: ui-monospace, 'SF Mono', monospace;
+            color: var(--gold);
+            background: rgba(197, 168, 128, 0.12);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(197, 168, 128, 0.2);
+        }
+
+        .sidebar-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px;
+        }
+
+        /* Panels */
+        .panel { margin-bottom: 22px; }
+        .panel-title {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin: 0 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .panel-card {
+            background: var(--surface-2);
+            border: 1px solid var(--surface-3);
+            border-radius: var(--radius-md);
+            padding: 14px;
+        }
+        .panel-card + .panel-card { margin-top: 10px; }
+
+        /* Mode selector */
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+        .mode-btn {
+            padding: 12px 6px;
+            background: var(--surface-2);
+            border: 1px solid var(--surface-3);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 10px;
+            font-weight: 500;
+        }
+        .mode-btn:hover {
+            background: var(--surface-3);
+            color: var(--text-primary);
+        }
+        .mode-btn.active {
+            background: var(--gold);
+            border-color: var(--gold-light);
+            color: var(--surface-0);
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(197,168,128,0.25);
+        }
+        .mode-btn svg { width: 22px; height: 22px; }
+
+        /* Segmented control */
+        .segmented {
+            display: flex;
+            gap: 2px;
+            background: var(--surface-3);
+            padding: 3px;
+            border-radius: var(--radius-sm);
+        }
+        .seg-btn {
+            flex: 1;
+            padding: 7px 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .seg-btn:hover { color: var(--text-primary); }
+        .seg-btn.active {
+            background: var(--gold);
+            color: var(--surface-0);
+            font-weight: 600;
+        }
+
+        /* Form fields */
+        .field { margin-bottom: 12px; }
+        .field:last-child { margin-bottom: 0; }
+        .field-label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .input, .select, .textarea {
+            width: 100%;
+            background: var(--surface-3);
+            border: 1px solid transparent;
+            color: var(--text-primary);
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-family: inherit;
+            transition: all 0.15s;
+            outline: none;
+        }
+        .input:focus, .select:focus, .textarea:focus {
+            border-color: var(--gold);
+            background: var(--surface-2);
+            box-shadow: 0 0 0 3px rgba(197, 168, 128, 0.15);
+        }
+        .textarea { resize: vertical; min-height: 56px; line-height: 1.5; }
+        .select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='%23a0a0a0'%3E%3Cpath d='M6 9L2 4h8z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 10px;
+            padding-right: 28px;
+            appearance: none;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .slider {
+            flex: 1;
+            accent-color: var(--gold);
+            height: 4px;
+        }
+        .slider-value {
+            font-family: ui-monospace, monospace;
+            font-size: 10px;
+            color: var(--gold);
+            min-width: 42px;
+            text-align: right;
+        }
+
+        .check-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 0;
+            user-select: none;
+        }
+        .check-row:hover { color: var(--text-primary); }
+        .check-row input { accent-color: var(--gold); width: 14px; height: 14px; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        /* Event tabs */
+        .event-tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid var(--surface-3);
+            padding-bottom: 0;
+        }
+        .event-tab {
+            flex: 1;
+            padding: 10px 4px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .event-tab:hover { color: var(--text-primary); background: var(--surface-2); }
+        .event-tab .tab-num {
+            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .event-tab.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+        }
+        .event-tab.idx-1.active { color: var(--accent-purple); border-bottom-color: var(--accent-purple); }
+        .event-tab.idx-2.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
+
+        /* Upload zone */
+        .upload-zone {
+            border: 2px dashed var(--surface-4);
+            border-radius: var(--radius-md);
+            padding: 18px 14px;
+            text-align: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 11px;
+            transition: all 0.15s;
+            background: var(--surface-2);
+            position: relative;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(197, 168, 128, 0.06);
+        }
+        .upload-zone svg {
+            width: 24px; height: 24px;
+            margin: 0 auto 6px;
+            display: block;
+            opacity: 0.7;
+        }
+        .upload-zone input[type=file] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer;
+        }
+
+        /* Preset grid */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .preset-btn {
+            aspect-ratio: 1;
+            background: var(--surface-2);
+            border: 1px solid var(--surface-3);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .preset-btn:hover {
+            border-color: var(--gold);
+            background: var(--surface-3);
+        }
+        .preset-btn.added {
+            border-color: var(--gold);
+            background: rgba(197, 168, 128, 0.08);
+        }
+        .preset-btn.added::after {
+            content: '✓';
+            position: absolute;
+            top: 1px; right: 4px;
+            color: var(--gold);
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .preset-btn svg, .preset-btn img {
+            max-width: 100%; max-height: 100%; object-fit: contain;
+        }
+
+        /* Artwork list */
+        .artwork-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 12px;
+        }
+        .artwork-list-empty {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-style: italic;
+            text-align: center;
+            padding: 8px;
+        }
+        .artwork-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--surface-2);
+            border: 1px solid var(--surface-3);
+            border-radius: var(--radius-sm);
+            padding: 7px 10px;
+            cursor: grab;
+            transition: all 0.15s;
+        }
+        .artwork-item:hover { border-color: var(--gold); background: var(--surface-3); }
+        .artwork-item.dragging { opacity: 0.4; }
+        .artwork-item.drop-target { border-color: var(--gold); background: rgba(197,168,128,0.08); }
+
+        .artwork-thumb {
+            width: 30px; height: 30px;
+            background: var(--surface-3);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            padding: 3px;
+        }
+        .artwork-thumb img, .artwork-thumb svg {
+            max-width: 100%; max-height: 100%; object-fit: contain;
+        }
+        .artwork-name {
+            flex: 1;
+            font-size: 11px;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .artwork-actions { display: flex; gap: 2px; }
+
+        .icon-btn {
+            width: 26px; height: 26px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            font-size: 14px;
+        }
+        .icon-btn:hover {
+            background: var(--surface-4);
+            color: var(--text-primary);
+        }
+        .icon-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+        }
+
+        /* Theme picker */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+        .theme-btn {
+            padding: 8px 4px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--surface-3);
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 500;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .theme-btn:hover { transform: translateY(-1px); }
+        .theme-btn.active { box-shadow: 0 0 0 2px var(--gold); }
+        .theme-btn .swatch {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .theme-btn.light { background: #FAF9F5; color: #1a1a1a; }
+        .theme-btn.dark  { background: #1a1a1a; color: #c5a880; }
+        .theme-btn.sepia { background: #F5F2EB; color: #5C4D3C; }
+
+        /* Action bar (sticky) */
+        .action-bar {
+            padding: 12px 14px;
+            background: var(--surface-0);
+            border-top: 1px solid var(--surface-3);
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .btn {
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn.flex { flex: 1; }
+        .btn-primary { background: var(--gold); color: var(--surface-0); }
+        .btn-primary:hover { background: var(--gold-light); box-shadow: 0 4px 12px rgba(197,168,128,0.3); }
+        .btn-secondary { background: var(--surface-3); color: var(--text-primary); }
+        .btn-secondary:hover { background: var(--surface-4); }
+        .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--surface-3); }
+        .btn-ghost:hover { color: var(--text-primary); background: var(--surface-3); }
+        .btn-danger { background: rgba(239,68,68,0.1); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+        .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+        /* ============================================================
+           PREVIEW AREA
+           ============================================================ */
+        .preview-area {
+            flex: 1;
+            background:
+                radial-gradient(circle at 25% 20%, rgba(197, 168, 128, 0.04), transparent 55%),
+                radial-gradient(circle at 75% 80%, rgba(197, 168, 128, 0.05), transparent 55%),
+                var(--surface-0);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .preview-topbar {
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--surface-3);
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(8px);
+            flex-shrink: 0;
+        }
+        .canvas-info {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-family: ui-monospace, monospace;
+        }
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .preview-canvas-wrap {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+        }
+        .preview-canvas-wrap.dragging-art { cursor: grabbing; }
+
+        /* ============================================================
+           SIGN CANVAS (the actual sign artwork)
+           ============================================================ */
+        .sign-canvas {
+            background: #FAF9F5;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04);
+            position: relative;
+            overflow: hidden;
+            transition: width 0.3s, height 0.3s, padding 0.3s, background-color 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            transform-origin: center;
+        }
+        .sign-canvas.portrait  { width: 1080px; height: 1920px; }
+        .sign-canvas.landscape { width: 1920px; height: 1080px; }
+
+        .sign-border {
+            position: absolute;
+            inset: 16px;
+            border: 1px solid rgba(197, 168, 128, 0.45);
+            pointer-events: none;
+            z-index: 5;
+            transition: border-color 0.3s;
+        }
+
+        .sign-watermark {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0.035;
+            z-index: 0;
+            color: #1a1a1a;
+            transition: opacity 0.3s, color 0.3s;
+        }
+        .sign-watermark svg { width: 85%; height: 85%; }
+
+        .sign-header {
+            text-align: center;
+            z-index: 10;
+            position: relative;
+            user-select: none;
+            margin-top: 4px;
+        }
+        .ornament-icon {
+            width: 200px; height: 176px;
+            margin: 0 auto 8px;
+            display: block;
+            color: #1a1a1a;
+            transition: color 0.3s;
+            object-fit: contain;
+        }
+        .hotel-logo-img {
+            width: 200px; height: 176px;
+            margin: 0 auto 8px;
+            display: block;
+            object-fit: contain;
+        }
+        .hotel-name-main {
+            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            font-weight: 700;
+            font-size: 36px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #1a1a1a;
+            line-height: 1.1;
+            transition: color 0.3s;
+        }
+        .hotel-name-sub {
+            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            font-weight: 600;
+            font-size: 22px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #1a1a1a;
+            margin-top: 4px;
+            transition: color 0.3s;
+        }
+        .hotel-city {
+            font-size: 16px;
+            letter-spacing: 0.45em;
+            color: var(--gold);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-top: 6px;
+            padding-left: 0.45em;
+        }
+
+        .sign-workspace {
+            width: 995px;
+            height: 1335px;
+            flex: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: stretch;
+            gap: 10px;
+            padding: 6px 0;
+            z-index: 10;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Landscape keeps flexible sizing */
+        .sign-canvas.landscape .sign-workspace {
+            width: 100%;
+            height: auto;
+            flex: 1;
+        }
+
+        .sign-footer {
+            z-index: 10;
+            position: relative;
+            user-select: none;
+            margin-bottom: 2px;
+        }
+        .footer-decor {
+            color: var(--gold);
+            font-size: 14px;
+            letter-spacing: 0.4em;
+            font-family: serif;
+        }
+
+        /* ============================================================
+           EVENT CARD
+           ============================================================ */
+        .event-card {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            transition: background 0.3s, color 0.3s;
+            color: #1a1a1a;
+        }
+        .event-card.bg-navy {
+            background: #0d2a4a;
+            color: #f5f5f5;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .event-card.bg-dark {
+            background: #1a1a1a;
+            color: #f5f5f5;
+            border-color: rgba(197, 168, 128, 0.25);
+        }
+
+        .event-card-inner {
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            justify-content: space-between;
+            flex: 1;
+        }
+        .event-card.mode-single .event-card-inner { padding: 24px 28px; gap: 14px; }
+        .event-card.mode-triple .event-card-inner { padding: 10px 14px; gap: 6px; }
+
+        /* Artwork row */
+        .artwork-row {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            min-height: 24px;
+            flex-wrap: wrap;
+        }
+        .artwork-row.align-flank { justify-content: space-between; }
+        .artwork-row.align-left  { justify-content: flex-start; }
+        .artwork-row.align-right { justify-content: flex-end; }
+        .artwork-row.has-banner { display: block; }
+
+        .artwork-render {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: grab;
+            transition: outline 0.15s;
+            outline: 2px solid transparent;
+            outline-offset: 3px;
+            border-radius: 3px;
+            user-select: none;
+            touch-action: none;
+        }
+        .artwork-render:hover { outline-color: rgba(197, 168, 128, 0.5); }
+        .artwork-render.selected { outline-color: var(--gold); }
+        .artwork-render.dragging { outline-color: var(--gold); opacity: 0.85; cursor: grabbing; z-index: 100; }
+        .artwork-render.align-self-left   { margin-right: auto; }
+        .artwork-render.align-self-right  { margin-left: auto; }
+        .artwork-render.align-self-center { margin: 0 auto; }
+        .artwork-render.is-banner { display: block; width: 100%; }
+        .artwork-render img, .artwork-render svg {
+            display: block;
+            width: 100%; height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* Title area */
+        .event-title-wrap {
+            text-align: center;
+            padding: 4px 4px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+        }
+        .event-title-lao {
+            font-weight: 700;
+            line-height: 1.4;
+            white-space: pre-line;
+            letter-spacing: 0.01em;
+            font-family: 'Phetsarath OT', 'Noto Sans Lao', sans-serif;
+            margin: 0;
+        }
+        .event-title-en {
+            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            font-weight: 500;
+            line-height: 1.35;
+            opacity: 0.85;
+            margin: 0;
+            white-space: pre-line;
+        }
+
+        /* Details stacked */
+        .event-details-stacked {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .detail-divider {
+            width: 80%;
+            border-top: 1px solid currentColor;
+            opacity: 0.18;
+            margin: 4px 0;
+        }
+        .detail-floor {
+            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            line-height: 1;
+            text-align: center;
+        }
+        .detail-floor sup {
+            font-size: 0.45em;
+            font-weight: 500;
+            vertical-align: super;
+            margin-left: 1px;
+        }
+        .detail-room {
+            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            font-weight: 500;
+            text-align: center;
+            color: var(--gold);
+            line-height: 1.2;
+        }
+        .detail-date {
+            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            text-align: center;
+            opacity: 0.85;
+            line-height: 1.3;
+        }
+        .detail-time {
+            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            text-align: center;
+            opacity: 0.75;
+            line-height: 1.3;
+            font-style: italic;
+        }
+
+        /* Details columns */
+        .event-details-columns {
+            width: 100%;
+            margin-top: auto;
+            padding-top: 6px;
+        }
+        .columns-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 4px;
+            text-align: center;
+            align-items: center;
+        }
+        .col-item { padding: 2px 6px; min-width: 0; overflow: hidden; }
+        .col-item + .col-item { border-left: 1px solid currentColor; border-color: rgba(255,255,255,0.18); }
+        .event-card:not(.bg-navy):not(.bg-dark) .col-item + .col-item {
+            border-color: rgba(0,0,0,0.15);
+        }
+        .col-label {
+            font-size: 7px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            opacity: 0.55;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .col-value {
+            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            font-weight: 600;
+            display: block;
+            line-height: 1.1;
+        }
+        .col-value.gold { color: var(--gold); }
+        .col-sub {
+            display: block;
+            font-size: 9px;
+            opacity: 0.7;
+            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            margin-top: 1px;
+        }
+
+        /* Snap guides */
+        .snap-guide {
+            position: absolute;
+            background: var(--accent-blue);
+            z-index: 200;
+            pointer-events: none;
+            box-shadow: 0 0 4px rgba(59,130,246,0.6);
+            transition: opacity 0.1s;
+        }
+        .snap-guide.h { left: 0; right: 0; height: 1px; }
+        .snap-guide.v { top: 0; bottom: 0; width: 1px; }
+
+        /* ============================================================
+           MODAL
+           ============================================================ */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal {
+            background: var(--surface-1);
+            border: 1px solid var(--surface-3);
+            border-radius: var(--radius-lg);
+            max-width: 760px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            animation: modalIn 0.22s cubic-bezier(.2,.9,.3,1);
+            overflow: hidden;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--surface-3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .modal-title { font-size: 14px; font-weight: 600; }
+        .modal-body {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 0;
+            flex: 1;
+            overflow: hidden;
+        }
+        .modal-preview {
+            background:
+                repeating-conic-gradient(#1a1a1a 0% 25%, #232323 0% 50%) 50% / 18px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            min-height: 320px;
+            border-right: 1px solid var(--surface-3);
+            overflow: hidden;
+            position: relative;
+        }
+        .modal-preview-inner {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s;
+            background: rgba(255,255,255,0.92);
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .modal-preview-inner img, .modal-preview-inner svg {
+            max-width: 240px;
+            max-height: 240px;
+            display: block;
+        }
+
+        .modal-controls {
+            padding: 18px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .control-group {
+            border-bottom: 1px solid var(--surface-3);
+            padding-bottom: 12px;
+        }
+        .control-group:last-child { border-bottom: none; padding-bottom: 0; }
+        .control-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .modal-footer {
+            padding: 12px 18px;
+            border-top: 1px solid var(--surface-3);
+            display: flex;
+            gap: 8px;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        /* ============================================================
+           TOAST
+           ============================================================ */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--surface-2);
+            border: 1px solid var(--gold);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 2000;
+            font-size: 12px;
+            font-weight: 500;
+            max-width: 380px;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { border-color: var(--accent-green); }
+        .toast.success .toast-icon { color: var(--accent-green); }
+        .toast.error { border-color: var(--accent-red); }
+        .toast.error .toast-icon { color: var(--accent-red); }
+        .toast-icon { color: var(--gold); font-size: 14px; }
+
+        /* ============================================================
+           PRINT
+           ============================================================ */
+        @page { size: A4 portrait; margin: 0; }
+
+        @media print {
+            body { background: #fff !important; overflow: visible !important; }
+            .no-print { display: none !important; }
+            .app-shell { display: block !important; height: auto !important; }
+            .preview-area { padding: 0 !important; background: none !important; }
+            .preview-canvas-wrap { padding: 0 !important; overflow: visible !important; }
+            .sign-canvas {
+                width: 210mm !important;
+                height: 297mm !important;
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                transform: none !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .sign-canvas.landscape {
+                width: 297mm !important;
+                height: 210mm !important;
+            }
+            .artwork-render { outline: none !important; cursor: default !important; }
+            .snap-guide { display: none !important; }
+        }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 1024px) {
+            .sidebar { width: 340px; min-width: 340px; }
+        }
+        @media (max-width: 768px) {
+            .app-shell { flex-direction: column; }
+            .sidebar {
+                width: 100%; min-width: 0;
+                max-height: 55vh;
+                border-right: none;
+                border-bottom: 1px solid var(--surface-3);
+            }
+            .modal { max-width: 95vw; }
+            .modal-body { grid-template-columns: 1fr; }
+            .modal-preview { border-right: none; border-bottom: 1px solid var(--surface-3); min-height: 220px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- ============================================================
+         SIDEBAR
+         ============================================================ -->
+    <aside class="sidebar no-print">
+        <div class="sidebar-header">
+            <div class="brand-logo">
+                <div class="brand-mark">S</div>
+                <div class="brand-text">
+                    <h1>Souphattra Signage</h1>
+                    <p>Studio · Vientiane</p>
+                </div>
+            </div>
+            <span class="version-badge">v3.0</span>
+        </div>
+
+        <div class="sidebar-scroll" id="sidebar-content">
+            <!-- Rendered by JS -->
+        </div>
+
+        <div class="action-bar">
+            <button class="btn btn-ghost" onclick="resetAll()" title="คืนค่าเริ่มต้นทั้งหมด">
+                ↺ <span>รีเซ็ต</span>
+            </button>
+            <button class="btn btn-secondary flex" onclick="exportAsPNG()" title="บันทึกเป็น PNG">
+                📸 PNG
+            </button>
+            <button class="btn btn-primary flex" onclick="triggerPrint()" title="พิมพ์ / เซฟ PDF">
+                🖨 PDF
+            </button>
+        </div>
+    </aside>
+
+    <!-- ============================================================
+         PREVIEW AREA
+         ============================================================ -->
+    <main class="preview-area">
+        <div class="preview-topbar no-print">
+            <div class="canvas-info" id="canvas-info-text">A4 Portrait · 210×297mm · Dual Event</div>
+            <div class="zoom-controls">
+                <button class="icon-btn" onclick="adjustZoom(-0.1)" title="ซูมออก">−</button>
+                <span class="canvas-info" id="zoom-value" style="min-width:48px;text-align:center;">100%</span>
+                <button class="icon-btn" onclick="adjustZoom(0.1)" title="ซูมเข้า">+</button>
+                <button class="icon-btn" onclick="setZoom(1)" title="ขนาดจริง (100%)">⌖</button>
+            </div>
+        </div>
+
+        <div class="preview-canvas-wrap" id="canvas-wrap">
+            <div id="sign-canvas" class="sign-canvas portrait" style="padding: 24px;">
+                <div id="sign-border" class="sign-border"></div>
+
+                <div id="sign-watermark" class="sign-watermark">
+                    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor">
+                        <rect x="20" y="20" width="60" height="60" stroke-width="1.5"/>
+                        <line x1="20" y1="20" x2="80" y2="80" stroke-width="1" />
+                        <line x1="80" y1="20" x2="20" y2="80" stroke-width="1" />
+                        <circle cx="50" cy="50" r="15" stroke-width="1.5" />
+                        <path d="M 50 2 L 50 98 M 2 50 L 98 50" stroke-width="1" />
+                        <rect x="35" y="35" width="30" height="30" stroke-width="1" transform="rotate(45 50 50)" />
+                    </svg>
+                </div>
+
+                <header class="sign-header">
+                    <img class="hotel-logo-img" id="hotel-logo-img" src="" alt="Hotel Logo" style="display:none;">
+                    <svg class="ornament-icon" id="hotel-ornament" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3">
+                        <rect x="20" y="20" width="60" height="60" stroke-width="4"/>
+                        <line x1="20" y1="20" x2="80" y2="80" />
+                        <line x1="80" y1="20" x2="20" y2="80" />
+                        <circle cx="50" cy="50" r="15" fill="#FAF9F5" class="ornament-fill" stroke-width="3" />
+                        <path d="M 50 10 L 50 90 M 10 50 L 90 50" />
+                        <rect x="35" y="35" width="30" height="30" class="ornament-fill" fill="#FAF9F5" transform="rotate(45 50 50)" />
+                    </svg>
+                    
+                </header>
+
+                <div id="preview-workspace" class="sign-workspace">
+                    <!-- Event cards injected here -->
+                </div>
+
+                <footer class="sign-footer">
+                    <div class="footer-decor">❖&nbsp;&nbsp;❖&nbsp;&nbsp;❖</div>
+                </footer>
+
+                <div class="snap-guide h" id="snap-guide-h" style="display:none; top:50%;"></div>
+                <div class="snap-guide v" id="snap-guide-v" style="display:none; left:50%;"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ============================================================
+     ARTWORK EDITOR MODAL
+     ============================================================ -->
+<div class="modal-backdrop no-print" id="artwork-modal" onclick="modalBackdropClick(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <div class="modal-title">🎨 ปรับแต่ง Artwork — <span id="mod-name">Logo</span></div>
+            <button class="icon-btn" onclick="closeArtworkEditor()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-preview">
+                <div class="modal-preview-inner" id="mod-preview"></div>
+            </div>
+            <div class="modal-controls">
+                <div class="control-group">
+                    <div class="control-label">📐 ขนาด (Size)</div>
+                    <div class="grid-2">
+                        <div>
+                            <label class="field-label">กว้าง (px)</label>
+                            <input type="number" class="input" id="mod-w" min="16" max="1920" onchange="modalUpdateSize('w')">
+                        </div>
+                        <div>
+                            <label class="field-label">สูง (px)</label>
+                            <input type="number" class="input" id="mod-h" min="16" max="1920" onchange="modalUpdateSize('h')">
+                        </div>
+                    </div>
+                    <label class="check-row" style="margin-top:8px;">
+                        <input type="checkbox" id="mod-aspect" checked onchange="modalToggleAspect()">
+                        🔒 รักษาสัดส่วนภาพต้นฉบับ
+                    </label>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">🔍 ขยาย/ย่อ (Scale)</div>
+                    <div class="slider-row">
+                        <input type="range" class="slider" id="mod-scale" min="0.3" max="3" step="0.05" value="1" oninput="modalUpdateScale()">
+                        <span class="slider-value" id="mod-scale-val">1.00×</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">🔄 หมุน (Rotation)</div>
+                    <div class="slider-row">
+                        <input type="range" class="slider" id="mod-rot" min="-180" max="180" step="1" value="0" oninput="modalUpdateRotation()">
+                        <span class="slider-value" id="mod-rot-val">0°</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">↔ ตำแหน่ง (Alignment)</div>
+                    <div class="segmented">
+                        <button class="seg-btn" id="mod-al-left" onclick="modalSetAlign('left')">⬅ ซ้าย</button>
+                        <button class="seg-btn active" id="mod-al-center" onclick="modalSetAlign('center')">🎯 กลาง</button>
+                        <button class="seg-btn" id="mod-al-right" onclick="modalSetAlign('right')">➡ ขวา</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">🖼 โหมด Banner</div>
+                    <label class="check-row">
+                        <input type="checkbox" id="mod-banner" onchange="modalToggleBanner()">
+                        ขยายภาพเต็มความกว้างของการ์ด
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" onclick="resetActiveArtwork()">↺ รีเซ็ต Artwork นี้</button>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-secondary" onclick="closeArtworkEditor()">เสร็จสิ้น</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast no-print" id="toast">
+    <span class="toast-icon">ℹ</span>
+    <span id="toast-message">พร้อมใช้งาน</span>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+'use strict';
+
+// ============================================================
+// CONSTANTS
+// ============================================================
+const PRESETS = {
+    eu:  { name: 'European Union',   defaultW: 100, defaultH: 100, ratio: 90/60 },
+    gov: { name: 'Gov Laos',         defaultW: 100, defaultH: 100, ratio: 1 },
+    wb:  { name: 'World Bank',       defaultW: 100, defaultH: 100, ratio: 90/50 },
+    aus: { name: 'Australian Aid',   defaultW: 100, defaultH: 100, ratio: 2 },
+    fao: { name: 'FAO',              defaultW: 100, defaultH: 100, ratio: 80/50 },
+    afd: { name: 'AFD France',       defaultW: 100, defaultH: 100, ratio: 80/48 },
+    asf: { name: 'Asia Foundation',  defaultW: 100, defaultH: 100, ratio: 90/36 },
+    kr:  { name: 'Republic of Korea',defaultW: 100, defaultH: 100, ratio: 70/52 },
+};
+
+const MODE_CAPS = { single: 1, dual: 2, triple: 3 };
+
+// Auto font-size multiplier for floor/room/title based on mode
+const MODE_SCALE = {
+    single: { title: 1.00, floor: 1.00, room: 1.00, date: 1.00 },
+    dual:   { title: 0.78, floor: 0.55, room: 0.72, date: 0.85 },
+    triple: { title: 0.60, floor: 0.42, room: 0.58, date: 0.72 },
+};
+
+const BG_THEMES = {
+    light: { canvas: '#FAF9F5', borderColor: 'rgba(197, 168, 128, 0.4)', textColor: '#1a1a1a', goldFill: '#FAF9F5', wmColor: '#1a1a1a', wmOpacity: 0.035 },
+    dark:  { canvas: '#111111', borderColor: 'rgba(197, 168, 128, 0.55)', textColor: '#f5f5f5', goldFill: '#111111', wmColor: '#c5a880', wmOpacity: 0.045 },
+    sepia: { canvas: '#F5F2EB', borderColor: 'rgba(92, 77, 60, 0.3)', textColor: '#4A3B2C', goldFill: '#F5F2EB', wmColor: '#5C4D3C', wmOpacity: 0.04 },
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let state;
+let dragState = null;       // Active artwork-in-preview drag
+let reorderState = null;    // Active artwork-list reorder
+
+function uid() { return 'a' + Math.random().toString(36).slice(2, 10); }
+
+function createArtwork(type, presetKey, src, name, naturalW, naturalH) {
+    const preset = presetKey ? PRESETS[presetKey] : null;
+    const w = preset ? preset.defaultW : 100;
+    const h = preset ? preset.defaultH : 100;
+    return {
+        id: uid(),
+        type: type,
+        presetKey: presetKey || null,
+        src: src || null,
+        name: name || preset?.name || 'Logo',
+        naturalW: naturalW || w,
+        naturalH: naturalH || h,
+        width: w,
+        height: h,
+        scale: 1,
+        rotation: 0,
+        position: { x: 0, y: 0 },
+        alignment: 'center',
+        isBanner: false,
+        keepRatio: true,
+    };
+}
+
+function createEvent(num) {
+    const base = {
+        id: `event-${num}`,
+        title: { lao: '', english: '' },
+        titleSize: 44,
+        titleEnSize: 28,
+        floor: '2nd Floor',
+        floorSize: 120,
+        room: 'Souphattra Room 1',
+        roomSize: 48,
+        date: '26th May 2026',
+        time: '8:00–17:00 Hrs.',
+        bgStyle: 'white',
+        layoutStyle: 'stacked',
+        artworkAlignment: 'center',
+        artworks: [],
+    };
+
+    if (num === 1) {
+        base.title.lao = 'ກອງປະຊຸມເຜີຍແຜ່ ໂຄງການປັບປຸງການຄຸ້ມຄອງ\nການເງິນແຫ່ງລັດ ໄລຍະ 3';
+        base.floor = '2nd Floor';
+        base.floorSize = 120;
+        base.room = 'Souphattra Room 1&2';
+        base.roomSize = 48;
+        base.date = '26th–27th May 2026';
+        base.time = '8:00–17:00 Hrs.';
+        base.artworks = [
+            createArtwork('preset', 'eu'),
+            createArtwork('preset', 'gov'),
+            createArtwork('preset', 'wb'),
+            createArtwork('preset', 'aus'),
+        ];
+    } else if (num === 2) {
+        base.title.lao = 'ກອງປະຊຸມສຳມະນາ ການສ້າງຂີດຄວາມສາມາດ ແລະ ແລກປ່ຽນບົດຮຽນ';
+        base.title.english = 'Workshop on Citizen Engagement & Village Environmental Units';
+        base.titleSize = 36;
+        base.titleEnSize = 24;
+        base.floor = '5th Floor';
+        base.floorSize = 100;
+        base.room = 'Souphattra Room 4&5';
+        base.roomSize = 40;
+        base.date = '26th May 2026';
+        base.time = '8:00–17:00 Hrs.';
+        base.bgStyle = 'navy';
+        base.layoutStyle = 'columns';
+        base.artworks = [
+            createArtwork('preset', 'eu'),
+            createArtwork('preset', 'asf'),
+        ];
+        base.artworkAlignment = 'flank';
+    } else if (num === 3) {
+        base.title.lao = 'ກອງປະຊຸມຄະນະຊີ້ນຳ ໂຄງການຄຸ້ມຄອງລຸ່ມນ້ຳຂະໜາດນ້ອຍ';
+        base.title.english = 'Project Steering Committee Meeting';
+        base.titleSize = 30;
+        base.titleEnSize = 22;
+        base.floor = '2nd Floor';
+        base.floorSize = 90;
+        base.room = 'Souphattra Room 3';
+        base.roomSize = 36;
+        base.date = '21st May 2026';
+        base.time = '08:00–12:00 Hrs.';
+        base.bgStyle = 'white';
+        base.layoutStyle = 'stacked';
+        base.artworks = [
+            createArtwork('preset', 'gov'),
+            createArtwork('preset', 'afd'),
+        ];
+        base.artworkAlignment = 'flank';
+    }
+    return base;
+}
+
+function defaultState() {
+    return {
+        mode: 'dual',
+        orientation: 'portrait',
+        theme: 'light',
+        showBorder: true,
+        showWatermark: true,
+        canvasPadding: 24,
+        zoom: 0.3,
+        bgImage: null,
+        hotelLogo: null,
+        activeEventTab: 0,
+        events: [createEvent(1), createEvent(2), createEvent(3)],
+        editor: { isOpen: false, eventIdx: null, artworkId: null },
+    };
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+    state = defaultState();
+    renderAll();
+    setupKeyboard();
+    setupGlobalDragEnd();
+});
+
+function renderAll() {
+    renderSidebar();
+    renderPreview();
+    applyTheme();
+    updateCanvasInfo();
+    updateZoom();
+}
+
+function setupKeyboard() {
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && state.editor.isOpen) closeArtworkEditor();
+    });
+}
+
+function setupGlobalDragEnd() {
+    document.addEventListener('pointerup', endArtworkDrag);
+    document.addEventListener('pointercancel', endArtworkDrag);
+}
+
+// ============================================================
+// SIDEBAR RENDERING
+// ============================================================
+function renderSidebar() {
+    const root = document.getElementById('sidebar-content');
+    root.innerHTML = `
+        ${renderModePanel()}
+        ${renderGlobalPanel()}
+        ${renderEventTabsPanel()}
+        ${renderEventConfigPanel(state.activeEventTab)}
+    `;
+    bindUploadZone();
+    bindReorderHandlers();
+}
+
+function renderModePanel() {
+    const modes = [
+        { key: 'single', label: 'งานเดี่ยว', sub: '1 Event', icon: iconSingle() },
+        { key: 'dual',   label: '2 งาน',    sub: 'Dual Events', icon: iconDual() },
+        { key: 'triple', label: '3 งาน',    sub: 'Triple Events', icon: iconTriple() },
+    ];
+    return `
+        <div class="panel">
+            <div class="panel-title">📋 รูปแบบป้าย (Signage Mode)</div>
+            <div class="mode-grid">
+                ${modes.map(m => `
+                    <button class="mode-btn ${state.mode === m.key ? 'active' : ''}"
+                            onclick="setMode('${m.key}')">
+                        ${m.icon}
+                        <span>${m.label}</span>
+                        <span style="opacity:0.7;font-size:9px;">${m.sub}</span>
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function renderGlobalPanel() {
+    return `
+        <div class="panel">
+            <div class="panel-title">⚙ ตั้งค่าหลัก (Global Settings)</div>
+            <div class="panel-card">
+                <div class="field">
+                    <label class="field-label">แนวกระดาษ (Orientation)</label>
+                    <div class="segmented">
+                        <button class="seg-btn ${state.orientation === 'portrait' ? 'active' : ''}" onclick="setOrientation('portrait')">📄 แนวตั้ง</button>
+                        <button class="seg-btn ${state.orientation === 'landscape' ? 'active' : ''}" onclick="setOrientation('landscape')">📊 แนวนอน</button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">โทนสีพื้นป้าย (Theme)</label>
+                    <div class="theme-grid">
+                        <button class="theme-btn light ${state.theme === 'light' ? 'active' : ''}" onclick="setTheme('light')">
+                            <div class="swatch" style="background:#FAF9F5;"></div>☀ สว่าง
+                        </button>
+                        <button class="theme-btn dark ${state.theme === 'dark' ? 'active' : ''}" onclick="setTheme('dark')">
+                            <div class="swatch" style="background:#1a1a1a;"></div>🌙 มืด
+                        </button>
+                        <button class="theme-btn sepia ${state.theme === 'sepia' ? 'active' : ''}" onclick="setTheme('sepia')">
+                            <div class="swatch" style="background:#F5F2EB;"></div>📜 ครีม
+                        </button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">ภาพพื้นหลังป้าย (Background Image)</label>
+                    <div style="display:flex;gap:6px;align-items:center;">
+                        <label class="btn btn-secondary" style="cursor:pointer;font-size:11px;padding:6px 10px;flex:1;text-align:center;">
+                            📷 ${state.bgImage ? 'เปลี่ยน BG' : 'อัปโหลด BG'}
+                            <input type="file" accept="image/*" style="display:none;" onchange="handleBgUpload(this.files[0]); this.value='';">
+                        </label>
+                        ${state.bgImage ? `<button class="btn btn-danger" style="padding:6px 10px;font-size:11px;" onclick="clearBgImage()">✕ ลบ</button>` : ''}
+                    </div>
+                    ${state.bgImage ? `<div style="margin-top:6px;"><img src="${state.bgImage}" style="width:100%;height:60px;object-fit:cover;border-radius:6px;border:1px solid var(--surface-4);"></div>` : ''}
+                </div>
+
+                <div class="field">
+                    <label class="field-label">โลโก้โรงแรม (Hotel Logo 200×176px)</label>
+                    <div style="display:flex;gap:6px;align-items:center;">
+                        <label class="btn btn-secondary" style="cursor:pointer;font-size:11px;padding:6px 10px;flex:1;text-align:center;">
+                            🏨 ${state.hotelLogo ? 'เปลี่ยนโลโก้' : 'อัปโหลดโลโก้'}
+                            <input type="file" accept="image/*" style="display:none;" onchange="handleHotelLogoUpload(this.files[0]); this.value='';">
+                        </label>
+                        ${state.hotelLogo ? `<button class="btn btn-danger" style="padding:6px 10px;font-size:11px;" onclick="clearHotelLogo()">✕ ลบ</button>` : ''}
+                    </div>
+                    ${state.hotelLogo ? `<div style="margin-top:6px;"><img src="${state.hotelLogo}" style="width:100%;height:60px;object-fit:contain;border-radius:6px;border:1px solid var(--surface-4);background:#fff;"></div>` : ''}
+                </div>
+
+                <div class="field">
+                    <label class="field-label">
+                        ระยะขอบป้าย (Canvas Padding)
+                        <span id="lbl-padding" style="float:right;font-family:monospace;color:var(--gold);">${state.canvasPadding}px</span>
+                    </label>
+                    <input type="range" class="slider" min="8" max="80" value="${state.canvasPadding}" oninput="adjustPadding(this.value)">
+                </div>
+
+                <label class="check-row">
+                    <input type="checkbox" ${state.showBorder ? 'checked' : ''} onchange="toggleBorder()">
+                    แสดงเส้นขอบทอง (Gold Frame Border)
+                </label>
+                <label class="check-row">
+                    <input type="checkbox" ${state.showWatermark ? 'checked' : ''} onchange="toggleWatermark()">
+                    แสดงลายน้ำ Souphattra (Watermark)
+                </label>
+            </div>
+        </div>
+    `;
+}
+
+function renderEventTabsPanel() {
+    const cap = MODE_CAPS[state.mode];
+    let tabs = '';
+    for (let i = 0; i < cap; i++) {
+        tabs += `
+            <button class="event-tab idx-${i} ${state.activeEventTab === i ? 'active' : ''}"
+                    onclick="setActiveTab(${i})">
+                <span class="tab-num">${i + 1}</span>
+                <span>Event ${i + 1}</span>
+            </button>
+        `;
+    }
+    return `
+        <div class="panel">
+            <div class="panel-title">🗂 รายละเอียดงาน (Event Configuration)</div>
+            <div class="event-tabs">${tabs}</div>
+        </div>
+    `;
+}
+
+function renderEventConfigPanel(idx) {
+    if (idx >= MODE_CAPS[state.mode]) {
+        idx = 0;
+        state.activeEventTab = 0;
+    }
+    const ev = state.events[idx];
+    return `
+        <!-- Background & Layout -->
+        <div class="panel-card">
+            <div class="field">
+                <label class="field-label">สีพื้นกล่องงาน (Background)</label>
+                <div class="segmented">
+                    <button class="seg-btn ${ev.bgStyle === 'white' ? 'active' : ''}" onclick="updateField(${idx}, 'bgStyle', 'white')">⬜ ขาว</button>
+                    <button class="seg-btn ${ev.bgStyle === 'navy' ? 'active' : ''}" onclick="updateField(${idx}, 'bgStyle', 'navy')">🟦 น้ำเงิน</button>
+                    <button class="seg-btn ${ev.bgStyle === 'dark' ? 'active' : ''}" onclick="updateField(${idx}, 'bgStyle', 'dark')">⬛ ดำ</button>
+                </div>
+            </div>
+            <div class="field">
+                <label class="field-label">รูปแบบรายละเอียด (Detail Layout)</label>
+                <div class="segmented">
+                    <button class="seg-btn ${ev.layoutStyle === 'stacked' ? 'active' : ''}" onclick="updateField(${idx}, 'layoutStyle', 'stacked')">⇅ แนวตั้ง</button>
+                    <button class="seg-btn ${ev.layoutStyle === 'columns' ? 'active' : ''}" onclick="updateField(${idx}, 'layoutStyle', 'columns')">⊞ 3 คอลัมน์</button>
+                </div>
+            </div>
+            <div class="field">
+                <label class="field-label">การจัดเรียงโลโก้ (Logo Alignment)</label>
+                <div class="segmented">
+                    <button class="seg-btn ${ev.artworkAlignment === 'center' ? 'active' : ''}" onclick="updateField(${idx}, 'artworkAlignment', 'center')">🎯 กลาง</button>
+                    <button class="seg-btn ${ev.artworkAlignment === 'flank' ? 'active' : ''}" onclick="updateField(${idx}, 'artworkAlignment', 'flank')">↔ ซ้าย-ขวา</button>
+                    <button class="seg-btn ${ev.artworkAlignment === 'left' ? 'active' : ''}" onclick="updateField(${idx}, 'artworkAlignment', 'left')">⬅ ซ้าย</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Artwork Manager -->
+        <div class="panel" style="margin-top:14px;">
+            <div class="panel-title">🎨 จัดการ Artwork / โลโก้</div>
+            <div class="panel-card">
+                <label class="field-label">โลโก้สำเร็จรูป (Preset Logos)</label>
+                <div class="preset-grid">
+                    ${Object.keys(PRESETS).map(k => `
+                        <button class="preset-btn ${hasPresetInEvent(idx, k) ? 'added' : ''}"
+                                onclick="addPresetArtwork(${idx}, '${k}')"
+                                title="${PRESETS[k].name}">
+                            ${getPresetSVG(k)}
+                        </button>
+                    `).join('')}
+                </div>
+
+                <label class="field-label" style="margin-top:14px;">อัปโหลดภาพของคุณเอง</label>
+                <div class="upload-zone" id="upload-zone-${idx}" data-event-idx="${idx}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <div>คลิกเพื่อเลือกไฟล์ หรือ <strong>ลาก-วาง</strong> ที่นี่</div>
+                    <div style="font-size:10px;opacity:0.7;margin-top:3px;">PNG, JPG, SVG · ไม่เกิน 2MB</div>
+                    <input type="file" accept="image/*" multiple onchange="handleFileUpload(${idx}, this.files); this.value='';">
+                </div>
+
+                <label class="field-label" style="margin-top:14px;">รายการ Artwork ในงานนี้</label>
+                ${ev.artworks.length === 0
+                    ? `<div class="artwork-list-empty">ยังไม่มี artwork — เพิ่มได้จากด้านบน</div>`
+                    : `<div class="artwork-list" data-event-idx="${idx}">
+                        ${ev.artworks.map((art, ai) => renderArtworkListItem(idx, art, ai)).join('')}
+                    </div>`
+                }
+            </div>
+        </div>
+
+        <!-- Title -->
+        <div class="panel" style="margin-top:14px;">
+            <div class="panel-title">✍ ชื่องาน (Event Title)</div>
+            <div class="panel-card">
+                <div class="field">
+                    <label class="field-label">ชื่อภาษาลาว/ไทย</label>
+                    <textarea class="textarea lao-text" rows="3"
+                        placeholder="ຊື່ກອງປະຊຸມ ພາສາລາວ ..."
+                        oninput="updateTitle(${idx}, 'lao', this.value)">${escapeHTML(ev.title.lao)}</textarea>
+                    <div class="slider-row">
+                        <span style="font-size:10px;color:var(--text-muted);">ขนาด</span>
+                        <input type="range" class="slider" min="10" max="120" value="${ev.titleSize}" oninput="updateTitleSize(${idx}, 'lao', this.value); this.nextElementSibling.textContent = this.value + 'px';">
+                        <span class="slider-value">${ev.titleSize}px</span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="field-label">ชื่อภาษาอังกฤษ (เลือกใส่)</label>
+                    <textarea class="textarea" rows="2"
+                        placeholder="English event name (optional)"
+                        oninput="updateTitle(${idx}, 'english', this.value)">${escapeHTML(ev.title.english)}</textarea>
+                    <div class="slider-row">
+                        <span style="font-size:10px;color:var(--text-muted);">ขนาด</span>
+                        <input type="range" class="slider" min="8" max="80" value="${ev.titleEnSize}" oninput="updateTitleSize(${idx}, 'english', this.value); this.nextElementSibling.textContent = this.value + 'px';">
+                        <span class="slider-value">${ev.titleEnSize}px</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details -->
+        <div class="panel" style="margin-top:14px;">
+            <div class="panel-title">📍 รายละเอียดสถานที่ & เวลา</div>
+            <div class="panel-card">
+                <div class="grid-2">
+                    <div class="field">
+                        <label class="field-label">ชั้น (Floor)</label>
+                        <input class="input" type="text" value="${escapeAttr(ev.floor)}"
+                            oninput="updateField(${idx}, 'floor', this.value)">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">ห้อง (Room)</label>
+                        <input class="input" type="text" value="${escapeAttr(ev.room)}"
+                            oninput="updateField(${idx}, 'room', this.value)">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="field">
+                        <label class="field-label">ขนาด Floor</label>
+                        <div class="slider-row">
+                            <input type="range" class="slider" min="20" max="200" value="${ev.floorSize}" oninput="updateField(${idx}, 'floorSize', +this.value); this.nextElementSibling.textContent = this.value + 'px';">
+                            <span class="slider-value">${ev.floorSize}px</span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">ขนาด Room</label>
+                        <div class="slider-row">
+                            <input type="range" class="slider" min="10" max="120" value="${ev.roomSize}" oninput="updateField(${idx}, 'roomSize', +this.value); this.nextElementSibling.textContent = this.value + 'px';">
+                            <span class="slider-value">${ev.roomSize}px</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="field">
+                        <label class="field-label">วันที่ (Date)</label>
+                        <input class="input" type="text" value="${escapeAttr(ev.date)}"
+                            oninput="updateField(${idx}, 'date', this.value)">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">เวลา (Time)</label>
+                        <input class="input" type="text" value="${escapeAttr(ev.time)}"
+                            oninput="updateField(${idx}, 'time', this.value)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderArtworkListItem(eventIdx, art, ai) {
+    return `
+        <div class="artwork-item" draggable="true" data-art-id="${art.id}" data-art-idx="${ai}">
+            <div class="artwork-thumb">${getArtworkVisual(art)}</div>
+            <div class="artwork-name">${escapeHTML(art.name)}</div>
+            <div class="artwork-actions">
+                <button class="icon-btn" onclick="openArtworkEditor(${eventIdx}, '${art.id}')" title="ปรับแต่ง">✎</button>
+                <button class="icon-btn danger" onclick="removeArtwork(${eventIdx}, '${art.id}')" title="ลบ">🗑</button>
+            </div>
+        </div>
+    `;
+}
+
+function bindUploadZone() {
+    document.querySelectorAll('.upload-zone').forEach(zone => {
+        const idx = +zone.dataset.eventIdx;
+        zone.addEventListener('dragover', e => {
+            e.preventDefault();
+            zone.classList.add('dragover');
+        });
+        zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            zone.classList.remove('dragover');
+            handleFileUpload(idx, e.dataTransfer.files);
+        });
+    });
+}
+
+function bindReorderHandlers() {
+    document.querySelectorAll('.artwork-list').forEach(list => {
+        const eventIdx = +list.dataset.eventIdx;
+        list.querySelectorAll('.artwork-item').forEach(item => {
+            item.addEventListener('dragstart', e => {
+                reorderState = { fromId: item.dataset.artId, eventIdx };
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', item.dataset.artId);
+            });
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+                list.querySelectorAll('.artwork-item').forEach(i => i.classList.remove('drop-target'));
+                reorderState = null;
+            });
+            item.addEventListener('dragover', e => {
+                e.preventDefault();
+                if (!reorderState || reorderState.eventIdx !== eventIdx) return;
+                if (item.dataset.artId !== reorderState.fromId) {
+                    list.querySelectorAll('.artwork-item').forEach(i => i.classList.remove('drop-target'));
+                    item.classList.add('drop-target');
+                }
+            });
+            item.addEventListener('drop', e => {
+                e.preventDefault();
+                if (!reorderState) return;
+                reorderArtwork(eventIdx, reorderState.fromId, item.dataset.artId);
+                reorderState = null;
+            });
+        });
+    });
+}
+
+// ============================================================
+// PREVIEW RENDERING
+// ============================================================
+function renderPreview() {
+    const ws = document.getElementById('preview-workspace');
+    const cap = MODE_CAPS[state.mode];
+    ws.innerHTML = '';
+    for (let i = 0; i < cap; i++) {
+        ws.appendChild(renderEventCard(state.events[i], i));
+    }
+    bindArtworkInteractions();
+}
+
+function renderEventCard(ev, idx) {
+    const card = document.createElement('div');
+    card.className = `event-card mode-${state.mode} bg-${ev.bgStyle}`;
+    card.dataset.eventIdx = idx;
+    card.style.flex = '1';
+
+    const inner = document.createElement('div');
+    inner.className = 'event-card-inner';
+
+    // Artwork row
+    inner.appendChild(renderArtworkRow(ev, idx));
+
+    // Title
+    inner.appendChild(renderTitleArea(ev));
+
+    // Details
+    inner.appendChild(renderDetailsArea(ev));
+
+    card.appendChild(inner);
+    return card;
+}
+
+function renderArtworkRow(ev, eventIdx) {
+    const row = document.createElement('div');
+    const hasBanner = ev.artworks.some(a => a.isBanner);
+    row.className = `artwork-row align-${ev.artworkAlignment} ${hasBanner ? 'has-banner' : ''}`;
+
+    if (ev.artworks.length === 0) {
+        row.style.minHeight = '4px';
+        return row;
+    }
+
+    ev.artworks.forEach(art => {
+        const el = renderArtworkRender(art, eventIdx);
+        row.appendChild(el);
+    });
+    return row;
+}
+
+function renderArtworkRender(art, eventIdx) {
+    const wrap = document.createElement('div');
+    wrap.className = `artwork-render align-self-${art.alignment} ${art.isBanner ? 'is-banner' : ''}`;
+    wrap.dataset.artId = art.id;
+    wrap.dataset.eventIdx = eventIdx;
+
+    const scale = MODE_SCALE[state.mode].title;
+    const w = art.isBanner ? '100%' : `${art.width * scale}px`;
+    const h = art.isBanner ? 'auto' : `${art.height * scale}px`;
+
+    wrap.style.width = w;
+    wrap.style.height = h;
+    wrap.style.transform = `translate(${art.position.x}px, ${art.position.y}px) rotate(${art.rotation}deg) scale(${art.scale})`;
+
+    wrap.innerHTML = getArtworkVisual(art);
+    return wrap;
+}
+
+function renderTitleArea(ev) {
+    const wrap = document.createElement('div');
+    wrap.className = 'event-title-wrap';
+    const ms = MODE_SCALE[state.mode];
+
+    if (ev.title.lao) {
+        const h = document.createElement('div');
+        h.className = 'event-title-lao';
+        h.style.fontSize = `${ev.titleSize * ms.title}px`;
+        h.textContent = ev.title.lao;
+        wrap.appendChild(h);
+    }
+    if (ev.title.english) {
+        const p = document.createElement('div');
+        p.className = 'event-title-en';
+        p.style.fontSize = `${ev.titleEnSize * ms.title}px`;
+        p.textContent = ev.title.english;
+        wrap.appendChild(p);
+    }
+    return wrap;
+}
+
+function renderDetailsArea(ev) {
+    const ms = MODE_SCALE[state.mode];
+    if (ev.layoutStyle === 'stacked') {
+        const wrap = document.createElement('div');
+        wrap.className = 'event-details-stacked';
+        wrap.innerHTML = `
+            <div class="detail-divider"></div>
+            <div class="detail-floor" style="font-size:${ev.floorSize * ms.floor}px;">${formatOrdinal(ev.floor)}</div>
+            <div class="detail-divider"></div>
+            <div class="detail-room" style="font-size:${ev.roomSize * ms.room}px;">${escapeHTML(ev.room)}</div>
+            <div class="detail-date" style="font-size:${13 * ms.date}px;">${escapeHTML(ev.date)}</div>
+            <div class="detail-time" style="font-size:${11 * ms.date}px;">${escapeHTML(ev.time)}</div>
+        `;
+        return wrap;
+    } else {
+        const wrap = document.createElement('div');
+        wrap.className = 'event-details-columns';
+        wrap.innerHTML = `
+            <div class="columns-grid">
+                <div class="col-item">
+                    <span class="col-label">Floor</span>
+                    <span class="col-value" style="font-size:${Math.max(12, ev.floorSize * ms.floor * 0.45)}px;">${formatOrdinal(ev.floor)}</span>
+                </div>
+                <div class="col-item">
+                    <span class="col-label">Meeting Room</span>
+                    <span class="col-value gold" style="font-size:${Math.max(10, ev.roomSize * ms.room * 0.85)}px;">${escapeHTML(ev.room)}</span>
+                </div>
+                <div class="col-item">
+                    <span class="col-label">Schedule</span>
+                    <span class="col-value" style="font-size:${10 * ms.date}px;">${escapeHTML(ev.date)}</span>
+                    <span class="col-sub" style="font-size:${9 * ms.date}px;">${escapeHTML(ev.time)}</span>
+                </div>
+            </div>
+        `;
+        return wrap;
+    }
+}
+
+function bindArtworkInteractions() {
+    document.querySelectorAll('.artwork-render').forEach(el => {
+        el.addEventListener('pointerdown', startArtworkDrag);
+    });
+}
+
+// ============================================================
+// ACTIONS — Global Settings
+// ============================================================
+function setMode(mode) {
+    state.mode = mode;
+    if (state.activeEventTab >= MODE_CAPS[mode]) state.activeEventTab = 0;
+    renderAll();
+    showToast(`เปลี่ยนเป็นโหมด: ${mode === 'single' ? 'งานเดี่ยว' : mode === 'dual' ? '2 งาน' : '3 งาน'}`);
+}
+
+function setOrientation(o) {
+    state.orientation = o;
+    const c = document.getElementById('sign-canvas');
+    c.classList.toggle('portrait', o === 'portrait');
+    c.classList.toggle('landscape', o === 'landscape');
+    renderSidebar();
+    updateCanvasInfo();
+    showToast(`เปลี่ยนแนว: ${o === 'portrait' ? 'แนวตั้ง' : 'แนวนอน'}`);
+}
+
+function setTheme(t) {
+    state.theme = t;
+    renderSidebar();
+    applyTheme();
+    showToast(`เปลี่ยนธีม: ${t === 'light' ? 'สว่าง' : t === 'dark' ? 'มืด' : 'ครีม'}`);
+}
+
+function applyTheme() {
+    const t = BG_THEMES[state.theme];
+    const canvas = document.getElementById('sign-canvas');
+    const border = document.getElementById('sign-border');
+    const wm = document.getElementById('sign-watermark');
+    const ornament = document.getElementById('hotel-ornament');
+    const logoImg = document.getElementById('hotel-logo-img');
+
+    if (state.bgImage) {
+        canvas.style.background = t.canvas;
+        canvas.style.backgroundImage = `url(${state.bgImage})`;
+        canvas.style.backgroundSize = 'cover';
+        canvas.style.backgroundPosition = 'center';
+    } else {
+        canvas.style.background = t.canvas;
+        canvas.style.backgroundImage = '';
+    }
+
+    border.style.borderColor = t.borderColor;
+    wm.style.color = t.wmColor;
+    wm.style.opacity = state.showWatermark ? t.wmOpacity : 0;
+    ornament.style.color = t.textColor;
+    document.querySelectorAll('.ornament-fill').forEach(el => el.setAttribute('fill', t.goldFill));
+    document.querySelectorAll('.hotel-name-main, .hotel-name-sub').forEach(el => el.style.color = t.textColor);
+
+    if (state.hotelLogo) {
+        logoImg.src = state.hotelLogo;
+        logoImg.style.display = 'block';
+        ornament.style.display = 'none';
+    } else {
+        logoImg.style.display = 'none';
+        ornament.style.display = 'block';
+    }
+}
+
+function toggleBorder() {
+    state.showBorder = !state.showBorder;
+    document.getElementById('sign-border').style.display = state.showBorder ? '' : 'none';
+}
+
+function toggleWatermark() {
+    state.showWatermark = !state.showWatermark;
+    const t = BG_THEMES[state.theme];
+    document.getElementById('sign-watermark').style.opacity = state.showWatermark ? t.wmOpacity : 0;
+}
+
+function adjustPadding(v) {
+    state.canvasPadding = +v;
+    document.getElementById('sign-canvas').style.padding = `${v}px`;
+    const lbl = document.getElementById('lbl-padding');
+    if (lbl) lbl.textContent = `${v}px`;
+}
+
+function handleBgUpload(file) {
+    if (!file || !file.type.startsWith('image/')) { showToast('ไม่ใช่ไฟล์ภาพ', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+        state.bgImage = e.target.result;
+        applyTheme();
+        renderSidebar();
+        showToast('เพิ่มภาพพื้นหลังแล้ว', 'success');
+    };
+    reader.readAsDataURL(file);
+}
+
+function clearBgImage() {
+    state.bgImage = null;
+    applyTheme();
+    renderSidebar();
+    showToast('ลบพื้นหลังแล้ว');
+}
+
+function handleHotelLogoUpload(file) {
+    if (!file || !file.type.startsWith('image/')) { showToast('ไม่ใช่ไฟล์ภาพ', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+        state.hotelLogo = e.target.result;
+        applyTheme();
+        renderSidebar();
+        showToast('อัปโหลดโลโก้โรงแรมแล้ว', 'success');
+    };
+    reader.readAsDataURL(file);
+}
+
+function clearHotelLogo() {
+    state.hotelLogo = null;
+    applyTheme();
+    renderSidebar();
+    showToast('ลบโลโก้โรงแรมแล้ว');
+}
+
+function setActiveTab(idx) {
+    state.activeEventTab = idx;
+    renderSidebar();
+}
+
+function adjustZoom(delta) {
+    setZoom(Math.max(0.1, Math.min(2, state.zoom + delta)));
+}
+function setZoom(z) {
+    state.zoom = z;
+    updateZoom();
+}
+function updateZoom() {
+    const c = document.getElementById('sign-canvas');
+    c.style.transform = `scale(${state.zoom})`;
+    document.getElementById('zoom-value').textContent = `${Math.round(state.zoom * 100)}%`;
+}
+
+function updateCanvasInfo() {
+    const o = state.orientation === 'portrait' ? '1080×1920px' : '1920×1080px';
+    const m = state.mode === 'single' ? 'Single Event' : state.mode === 'dual' ? 'Dual Event' : 'Triple Event';
+    const inner = state.orientation === 'portrait' ? ' · Inner Box: 995×1335px' : '';
+    document.getElementById('canvas-info-text').textContent =
+        `${state.orientation === 'portrait' ? 'Portrait' : 'Landscape'} · ${o} · ${m}${inner}`;
+}
+
+// ============================================================
+// ACTIONS — Event Fields
+// ============================================================
+function updateField(idx, field, value) {
+    state.events[idx][field] = value;
+    renderPreview();
+    // re-render sidebar only when toggle-like field that affects sidebar
+    if (['bgStyle', 'layoutStyle', 'artworkAlignment'].includes(field)) {
+        renderSidebar();
+    }
+}
+
+function updateTitle(idx, lang, value) {
+    state.events[idx].title[lang] = value;
+    renderPreview();
+}
+
+function updateTitleSize(idx, lang, value) {
+    if (lang === 'lao') state.events[idx].titleSize = +value;
+    else state.events[idx].titleEnSize = +value;
+    renderPreview();
+}
+
+// ============================================================
+// ACTIONS — Artwork Management
+// ============================================================
+function hasPresetInEvent(eventIdx, key) {
+    return state.events[eventIdx].artworks.some(a => a.presetKey === key);
+}
+
+function addPresetArtwork(eventIdx, key) {
+    const ev = state.events[eventIdx];
+    if (hasPresetInEvent(eventIdx, key)) {
+        // toggle off — remove the preset
+        ev.artworks = ev.artworks.filter(a => a.presetKey !== key);
+        showToast(`นำ ${PRESETS[key].name} ออกแล้ว`);
+    } else {
+        ev.artworks.push(createArtwork('preset', key));
+        showToast(`เพิ่ม ${PRESETS[key].name} แล้ว`, 'success');
+    }
+    renderAll();
+}
+
+function handleFileUpload(eventIdx, files) {
+    if (!files || files.length === 0) return;
+    let validCount = 0;
+    Array.from(files).forEach(file => {
+        if (!file.type.startsWith('image/')) {
+            showToast(`${file.name} ไม่ใช่ไฟล์ภาพ`, 'error');
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            showToast(`${file.name} ใหญ่เกิน 2MB`, 'error');
+            return;
+        }
+        validCount++;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const dataURL = e.target.result;
+            const img = new Image();
+            img.onload = () => {
+                const art = createArtwork('upload', null, dataURL, file.name.replace(/\.[^.]+$/, ''), img.naturalWidth, img.naturalHeight);
+                art.width = 100;
+                art.height = 100;
+                state.events[eventIdx].artworks.push(art);
+                renderAll();
+            };
+            img.src = dataURL;
+        };
+        reader.readAsDataURL(file);
+    });
+    if (validCount > 0) showToast(`กำลังเพิ่ม ${validCount} ภาพ...`, 'success');
+}
+
+function removeArtwork(eventIdx, artId) {
+    state.events[eventIdx].artworks = state.events[eventIdx].artworks.filter(a => a.id !== artId);
+    renderAll();
+    showToast('ลบ artwork แล้ว');
+}
+
+function reorderArtwork(eventIdx, fromId, toId) {
+    const arr = state.events[eventIdx].artworks;
+    const fromIdx = arr.findIndex(a => a.id === fromId);
+    const toIdx = arr.findIndex(a => a.id === toId);
+    if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return;
+    const [moved] = arr.splice(fromIdx, 1);
+    arr.splice(toIdx, 0, moved);
+    renderAll();
+}
+
+function getArtwork(eventIdx, artId) {
+    return state.events[eventIdx].artworks.find(a => a.id === artId);
+}
+
+function getArtworkVisual(art) {
+    if (art.type === 'upload' && art.src) {
+        return `<img src="${art.src}" alt="${escapeAttr(art.name)}" draggable="false">`;
+    }
+    if (art.presetKey) return getPresetSVG(art.presetKey);
+    return '';
+}
+
+// ============================================================
+// ARTWORK EDITOR MODAL
+// ============================================================
+function openArtworkEditor(eventIdx, artId) {
+    const art = getArtwork(eventIdx, artId);
+    if (!art) return;
+    state.editor.isOpen = true;
+    state.editor.eventIdx = eventIdx;
+    state.editor.artworkId = artId;
+
+    document.getElementById('mod-name').textContent = art.name;
+    document.getElementById('mod-w').value = Math.round(art.width);
+    document.getElementById('mod-h').value = Math.round(art.height);
+    document.getElementById('mod-scale').value = art.scale;
+    document.getElementById('mod-scale-val').textContent = `${(+art.scale).toFixed(2)}×`;
+    document.getElementById('mod-rot').value = art.rotation;
+    document.getElementById('mod-rot-val').textContent = `${art.rotation}°`;
+    document.getElementById('mod-aspect').checked = art.keepRatio;
+    document.getElementById('mod-banner').checked = art.isBanner;
+
+    document.querySelectorAll('[id^="mod-al-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById(`mod-al-${art.alignment}`).classList.add('active');
+
+    refreshModalPreview();
+    document.getElementById('artwork-modal').classList.add('open');
+}
+
+function refreshModalPreview() {
+    const art = currentEditorArtwork();
+    if (!art) return;
+    const box = document.getElementById('mod-preview');
+    box.innerHTML = getArtworkVisual(art);
+    box.style.width = `${art.width}px`;
+    box.style.height = `${art.height}px`;
+    box.style.maxWidth = '240px';
+    box.style.maxHeight = '240px';
+    box.style.transform = `rotate(${art.rotation}deg) scale(${art.scale})`;
+}
+
+function currentEditorArtwork() {
+    if (!state.editor.isOpen) return null;
+    return getArtwork(state.editor.eventIdx, state.editor.artworkId);
+}
+
+function closeArtworkEditor() {
+    state.editor.isOpen = false;
+    document.getElementById('artwork-modal').classList.remove('open');
+    renderAll();
+}
+
+function modalBackdropClick(e) {
+    if (e.target.id === 'artwork-modal') closeArtworkEditor();
+}
+
+function modalUpdateSize(changed) {
+    const art = currentEditorArtwork();
+    if (!art) return;
+    const w = +document.getElementById('mod-w').value;
+    const h = +document.getElementById('mod-h').value;
+    if (art.keepRatio && art.naturalW && art.naturalH) {
+        const ratio = art.naturalW / art.naturalH;
+        if (changed === 'w') {
+            art.width = w;
+            art.height = Math.round(w / ratio);
+            document.getElementById('mod-h').value = art.height;
+        } else {
+            art.height = h;
+            art.width = Math.round(h * ratio);
+            document.getElementById('mod-w').value = art.width;
+        }
+    } else {
+        art.width = w;
+        art.height = h;
+    }
+    refreshModalPreview();
+    renderPreview();
+}
+
+function modalToggleAspect() {
+    const art = currentEditorArtwork();
+    if (!art) return;
+    art.keepRatio = document.getElementById('mod-aspect').checked;
+}
+
+function modalUpdateScale() {
+    const art = currentEditorArtwork();
+    if (!art) return;
+    art.scale = +document.getElementById('mod-scale').value;
+    document.getElementById('mod-scale-val').textContent = `${art.scale.toFixed(2)}×`;
+    refreshModalPreview();
+    renderPreview();
+}
+
+function modalUpdateRotation() {
+    const art = currentEditorArtwork();
+    if (!art) return;
+    art.rotation = +document.getElementById('mod-rot').value;
+    document.getElementById('mod-rot-val').textContent = `${art.rotation}°`;
+    refreshModalPreview();
+    renderPreview();
+}
+
+function modalSetAlign(a) {
+    const art = currentEditorArtwork();
+    if (!art) return;
+    art.alignment = a;
+    document.querySelectorAll('[id^="mod-al-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById(`mod-al-${a}`).classList.add('active');
+    renderPreview();
+}
+
+function modalToggleBanner() {
+    const art = currentEditorArtwork();
+    if (!art) return;
+    art.isBanner = document.getElementById('mod-banner').checked;
+    renderPreview();
+}
+
+function resetActiveArtwork() {
+    const art = currentEditorArtwork();
+    if (!art) return;
+    const fresh = art.type === 'preset'
+        ? createArtwork('preset', art.presetKey)
+        : { ...art, scale: 1, rotation: 0, position: { x: 0, y: 0 }, alignment: 'center', isBanner: false };
+    // preserve src/name for upload type
+    if (art.type === 'upload') {
+        fresh.id = art.id;
+        fresh.src = art.src;
+        fresh.name = art.name;
+        fresh.naturalW = art.naturalW;
+        fresh.naturalH = art.naturalH;
+        fresh.width = 100;
+        fresh.height = 100;
+    } else {
+        fresh.id = art.id;
+    }
+    Object.assign(art, fresh);
+    openArtworkEditor(state.editor.eventIdx, state.editor.artworkId);
+    renderPreview();
+    showToast('รีเซ็ต artwork สำเร็จ');
+}
+
+// ============================================================
+// DRAG-IN-PREVIEW + SNAP GUIDES
+// ============================================================
+const SNAP_THRESHOLD = 6; // px
+
+function startArtworkDrag(e) {
+    const el = e.currentTarget;
+    const artId = el.dataset.artId;
+    const eventIdx = +el.dataset.eventIdx;
+    const art = getArtwork(eventIdx, artId);
+    if (!art) return;
+
+    e.preventDefault();
+    el.setPointerCapture(e.pointerId);
+
+    dragState = {
+        el,
+        eventIdx,
+        artId,
+        art,
+        startX: e.clientX,
+        startY: e.clientY,
+        origX: art.position.x,
+        origY: art.position.y,
+        hasMoved: false,
+    };
+
+    document.addEventListener('pointermove', onArtworkDrag);
+    document.getElementById('canvas-wrap').classList.add('dragging-art');
+}
+
+function onArtworkDrag(e) {
+    if (!dragState) return;
+    const { el, art, startX, startY, origX, origY } = dragState;
+    let dx = (e.clientX - startX) / state.zoom;
+    let dy = (e.clientY - startY) / state.zoom;
+
+    if (Math.abs(e.clientX - startX) > 3 || Math.abs(e.clientY - startY) > 3) {
+        dragState.hasMoved = true;
+        el.classList.add('dragging');
+    }
+
+    art.position.x = origX + dx;
+    art.position.y = origY + dy;
+
+    // Snap-to-center detection
+    const canvasEl = document.getElementById('sign-canvas');
+    const cRect = canvasEl.getBoundingClientRect();
+    const aRect = el.getBoundingClientRect();
+    const cCenterX = cRect.left + cRect.width / 2;
+    const cCenterY = cRect.top + cRect.height / 2;
+    const aCenterX = aRect.left + aRect.width / 2;
+    const aCenterY = aRect.top + aRect.height / 2;
+
+    let snappedX = false, snappedY = false;
+    if (Math.abs(aCenterX - cCenterX) < SNAP_THRESHOLD * state.zoom) {
+        art.position.x = origX + dx - (aCenterX - cCenterX) / state.zoom;
+        snappedX = true;
+    }
+    if (Math.abs(aCenterY - cCenterY) < SNAP_THRESHOLD * state.zoom) {
+        art.position.y = origY + dy - (aCenterY - cCenterY) / state.zoom;
+        snappedY = true;
+    }
+
+    showSnapGuides(snappedX, snappedY);
+
+    el.style.transform = `translate(${art.position.x}px, ${art.position.y}px) rotate(${art.rotation}deg) scale(${art.scale})`;
+}
+
+function endArtworkDrag(e) {
+    if (!dragState) return;
+    const { el, eventIdx, artId, hasMoved } = dragState;
+    el.classList.remove('dragging');
+    hideSnapGuides();
+    document.removeEventListener('pointermove', onArtworkDrag);
+    document.getElementById('canvas-wrap').classList.remove('dragging-art');
+    if (!hasMoved) {
+        // It was a click — open the editor
+        openArtworkEditor(eventIdx, artId);
+    }
+    dragState = null;
+}
+
+function showSnapGuides(snapX, snapY) {
+    document.getElementById('snap-guide-v').style.display = snapX ? '' : 'none';
+    document.getElementById('snap-guide-h').style.display = snapY ? '' : 'none';
+}
+function hideSnapGuides() {
+    document.getElementById('snap-guide-v').style.display = 'none';
+    document.getElementById('snap-guide-h').style.display = 'none';
+}
+
+// ============================================================
+// EXPORT / PRINT
+// ============================================================
+function triggerPrint() {
+    // Reset zoom for accurate print
+    const prevZoom = state.zoom;
+    setZoom(1);
+    setTimeout(() => {
+        window.print();
+        setZoom(prevZoom);
+    }, 100);
+}
+
+async function exportAsPNG() {
+    if (typeof html2canvas === 'undefined') {
+        showToast('ไลบรารี html2canvas ไม่พร้อม', 'error');
+        return;
+    }
+    showToast('กำลังสร้างภาพ PNG...');
+    const canvas = document.getElementById('sign-canvas');
+    const prevZoom = state.zoom;
+    const prevTransform = canvas.style.transform;
+    canvas.style.transform = 'none';
+
+    try {
+        const snapshot = await html2canvas(canvas, {
+            scale: 1,
+            useCORS: true,
+            backgroundColor: null,
+            logging: false,
+            width: 1080,
+            height: 1920,
+        });
+        const link = document.createElement('a');
+        link.download = `Souphattra_Sign_${Date.now()}.png`;
+        link.href = snapshot.toDataURL('image/png');
+        link.click();
+        showToast('บันทึก PNG สำเร็จ!', 'success');
+    } catch (err) {
+        console.error(err);
+        showToast('เกิดข้อผิดพลาดในการ export', 'error');
+    } finally {
+        canvas.style.transform = prevTransform;
+        state.zoom = prevZoom;
+    }
+}
+
+function resetAll() {
+    if (!confirm('คืนค่าทั้งหมดเป็นค่าเริ่มต้น? ข้อมูลปัจจุบันจะหายไป')) return;
+    state = defaultState();
+    renderAll();
+    showToast('คืนค่าเริ่มต้นเรียบร้อย');
+}
+
+// ============================================================
+// PRESET SVG (inline)
+// ============================================================
+function getPresetSVG(key) {
+    switch (key) {
+        case 'eu':
+            return `<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+                <rect width="120" height="80" fill="#003399"/>
+                <g transform="translate(60,40)" fill="#FFCC00">
+                    ${Array.from({length: 12}).map((_, i) => `<g transform="rotate(${i * 30})"><polygon points="0,-22 5,-7 -8,-15 8,-15 -5,-7"/></g>`).join('')}
+                </g>
+                <text x="60" y="74" fill="#fff" font-size="6" font-family="Arial" text-anchor="middle" font-weight="bold">EUROPEAN UNION</text>
+            </svg>`;
+        case 'gov':
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="44" fill="#fff" stroke="#D4AF37" stroke-width="3"/>
+                <circle cx="50" cy="50" r="38" fill="none" stroke="#D4AF37" stroke-width="1" stroke-dasharray="3,2"/>
+                <path d="M 22 60 C 22 32 36 22 50 22 C 64 22 78 32 78 60" stroke="#D4AF37" stroke-width="3" fill="none"/>
+                <path d="M 42 60 L 42 42 L 50 30 L 58 42 L 58 60 Z" fill="#D4AF37"/>
+                <rect x="28" y="60" width="44" height="6" fill="#D4AF37" rx="1"/>
+                <rect x="32" y="68" width="36" height="3" fill="#D4AF37" rx="1"/>
+            </svg>`;
+        case 'wb':
+            return `<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+                <rect width="120" height="80" fill="#fff"/>
+                <g transform="translate(22,40)">
+                    <circle r="14" fill="none" stroke="#002E5B" stroke-width="1.8"/>
+                    <path d="M -14 0 H 14 M 0 -14 V 14" stroke="#002E5B" stroke-width="1.5"/>
+                    <path d="M -10 -10 C -3 -3 -3 3 -10 10 M 10 -10 C 3 -3 3 3 10 10" stroke="#002E5B" stroke-width="1.5" fill="none"/>
+                </g>
+                <text x="42" y="36" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#002E5B">THE WORLD BANK</text>
+                <text x="42" y="50" font-family="Arial,sans-serif" font-size="7" fill="#002E5B" letter-spacing="1">IBRD • IDA</text>
+                <text x="42" y="60" font-family="Arial,sans-serif" font-size="6" fill="#888">WORLD BANK GROUP</text>
+            </svg>`;
+        case 'aus':
+            return `<svg viewBox="0 0 140 60" xmlns="http://www.w3.org/2000/svg">
+                <rect width="140" height="60" fill="#fff"/>
+                <path d="M 10 42 C 12 38 18 35 25 32 C 35 28 42 30 48 12 C 50 18 46 24 38 30 C 30 36 18 46 10 42 Z" fill="#E4002B"/>
+                <text x="55" y="28" font-family="Arial,sans-serif" font-weight="700" font-size="13" fill="#012169">Australian</text>
+                <text x="55" y="46" font-family="Arial,sans-serif" font-weight="700" font-size="14" fill="#E4002B">Aid</text>
+            </svg>`;
+        case 'fao':
+            return `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100" height="80" fill="#fff"/>
+                <circle cx="50" cy="34" r="22" fill="none" stroke="#1F8F4E" stroke-width="2"/>
+                <path d="M 30 36 Q 50 18 70 36 M 30 36 Q 50 50 70 36" stroke="#1F8F4E" stroke-width="1.5" fill="none"/>
+                <path d="M 50 16 V 52 M 36 22 L 64 46 M 36 46 L 64 22" stroke="#1F8F4E" stroke-width="0.8"/>
+                <text x="50" y="68" font-family="Arial" font-size="10" font-weight="700" fill="#1F8F4E" text-anchor="middle">FAO</text>
+                <text x="50" y="76" font-family="Arial" font-size="5" fill="#1F8F4E" text-anchor="middle">UNITED NATIONS</text>
+            </svg>`;
+        case 'afd':
+            return `<svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+                <rect width="120" height="60" fill="#fff"/>
+                <circle cx="22" cy="30" r="14" fill="none" stroke="#00A1E0" stroke-width="3"/>
+                <circle cx="22" cy="30" r="8" fill="#00A1E0"/>
+                <text x="44" y="28" font-family="Arial,sans-serif" font-weight="800" font-size="20" fill="#0a2a4a">AFD</text>
+                <text x="44" y="40" font-family="Arial,sans-serif" font-size="6" fill="#0a2a4a" letter-spacing="1">AGENCE FRANÇAISE</text>
+                <text x="44" y="48" font-family="Arial,sans-serif" font-size="6" fill="#0a2a4a" letter-spacing="1">DE DÉVELOPPEMENT</text>
+            </svg>`;
+        case 'asf':
+            return `<svg viewBox="0 0 140 56" xmlns="http://www.w3.org/2000/svg">
+                <rect width="140" height="56" fill="#fff"/>
+                <circle cx="20" cy="28" r="14" fill="none" stroke="#8B2D8C" stroke-width="2.5"/>
+                <path d="M 12 22 Q 20 30 28 22 M 14 32 Q 20 26 26 32" stroke="#8B2D8C" stroke-width="1.5" fill="none"/>
+                <text x="40" y="24" font-family="Arial,sans-serif" font-weight="700" font-size="11" fill="#444">The Asia</text>
+                <text x="40" y="40" font-family="Arial,sans-serif" font-weight="700" font-size="11" fill="#444">Foundation</text>
+            </svg>`;
+        case 'kr':
+            return `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100" height="80" fill="#fff" stroke="#ddd" stroke-width="1"/>
+                <circle cx="50" cy="34" r="14" fill="none" stroke="#003478" stroke-width="2"/>
+                <path d="M 36 34 Q 50 20 64 34 Q 50 48 36 34 Z" fill="#003478"/>
+                <path d="M 36 34 Q 43 27 50 34" fill="#CD2E3A"/>
+                <text x="50" y="62" font-family="Arial" font-size="8" font-weight="700" fill="#003478" text-anchor="middle">KOREA</text>
+                <text x="50" y="72" font-family="Arial" font-size="5" fill="#003478" text-anchor="middle">REPUBLIC OF</text>
+            </svg>`;
+        default:
+            return '';
+    }
+}
+
+// Mode icons (small)
+function iconSingle() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="1"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg>`; }
+function iconDual()   { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="8" rx="1"/><rect x="5" y="13" width="14" height="8" rx="1"/></svg>`; }
+function iconTriple() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="6" rx="1"/><rect x="5" y="10" width="14" height="6" rx="1"/><rect x="5" y="18" width="14" height="4" rx="1"/></svg>`; }
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function escapeHTML(s) {
+    if (s == null) return '';
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+function escapeAttr(s) {
+    return escapeHTML(s).replace(/"/g, '&quot;');
+}
+
+function formatOrdinal(text) {
+    return escapeHTML(text).replace(/(\d+)(st|nd|rd|th)/gi, '$1<sup>$2</sup>');
+}
+
+let toastTimer;
+function showToast(msg, type) {
+    const toast = document.getElementById('toast');
+    const message = document.getElementById('toast-message');
+    const icon = toast.querySelector('.toast-icon');
+
+    toast.classList.remove('success', 'error');
+    if (type === 'success') { toast.classList.add('success'); icon.textContent = '✓'; }
+    else if (type === 'error') { toast.classList.add('error'); icon.textContent = '✕'; }
+    else icon.textContent = 'ℹ';
+
+    message.textContent = msg;
+    toast.classList.add('show');
+
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+</script>
+
+</body>
+</html>
