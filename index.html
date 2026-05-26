@@ -2291,12 +2291,11 @@ function updateZoom() {
 }
 
 function updateCanvasInfo() {
-    const work = state.orientation === 'portrait' ? '1080×1920' : '1920×1080';
-    const out = state.orientation === 'portrait' ? '535×955' : '955×535';
-    const m = state.mode === 'single' ? 'Single' : state.mode === 'dual' ? 'Dual' : 'Triple';
-    const inner = state.orientation === 'portrait' ? ' · Inner: 995×1335' : '';
+    const o = state.orientation === 'portrait' ? '1080×1920px' : '1920×1080px';
+    const m = state.mode === 'single' ? 'Single Event' : state.mode === 'dual' ? 'Dual Event' : 'Triple Event';
+    const inner = state.orientation === 'portrait' ? ' · Inner Box: 995×1335px' : '';
     document.getElementById('canvas-info-text').textContent =
-        `${state.orientation === 'portrait' ? 'Portrait' : 'Landscape'} · Work ${work}px → Export ${out}px · ${m}${inner}`;
+        `${state.orientation === 'portrait' ? 'Portrait' : 'Landscape'} · ${o} · ${m}${inner}`;
 }
 
 // ============================================================
@@ -2821,24 +2820,20 @@ async function exportAsPNG() {
     const prevTransform = canvas.style.transform;
     canvas.style.transform = 'none';
 
-    // Working canvas size (DOM pixels)
-    const canvasW = state.orientation === 'portrait' ? 1080 : 1920;
-    const canvasH = state.orientation === 'portrait' ? 1920 : 1080;
-    // Target output size — downscaled
-    const outW = state.orientation === 'portrait' ? 535 : 955;
-    const outH = state.orientation === 'portrait' ? 955 : 535;
-    const exportScale = outW / canvasW;
+    // Output dimensions = working canvas (1080×1920 portrait / 1920×1080 landscape)
+    const outW = state.orientation === 'portrait' ? 1080 : 1920;
+    const outH = state.orientation === 'portrait' ? 1920 : 1080;
 
     try {
         const snapshot = await html2canvas(canvas, {
-            scale: exportScale,
+            scale: 1,
             useCORS: true,
             backgroundColor: null,
             logging: false,
-            width: canvasW,
-            height: canvasH,
-            windowWidth: canvasW,
-            windowHeight: canvasH,
+            width: outW,
+            height: outH,
+            windowWidth: outW,
+            windowHeight: outH,
         });
         const link = document.createElement('a');
         link.download = `Souphattra_Sign_${outW}x${outH}_${Date.now()}.png`;
