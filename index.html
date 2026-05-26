@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Souphattra Signage Studio — Vientiane</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -743,6 +744,54 @@
             color: #f5f5f5;
             border-color: rgba(197, 168, 128, 0.25);
         }
+        .event-card.bg-custom {
+            background: var(--custom-bg, #ffffff);
+            color: var(--custom-fg, #1a1a1a);
+            border-color: rgba(0,0,0,0.1);
+        }
+
+        /* PPTX color palette */
+        .pptx-palette {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            margin-top: 8px;
+        }
+        .pptx-swatch {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            border: 1px solid var(--surface-4);
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s;
+        }
+        .pptx-swatch:hover { transform: scale(1.08); border-color: var(--gold); }
+        .pptx-swatch::after {
+            content: attr(data-slide);
+            position: absolute;
+            bottom: -2px;
+            right: 2px;
+            font-size: 8px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 1px 3px;
+            border-radius: 2px;
+        }
+        .color-picker-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-top: 6px;
+        }
+        .color-picker-row input[type=color] {
+            width: 40px;
+            height: 32px;
+            padding: 0;
+            border: 1px solid var(--surface-4);
+            border-radius: 4px;
+            cursor: pointer;
+            background: transparent;
+        }
 
         .event-card-inner {
             padding: 14px 16px;
@@ -1378,6 +1427,8 @@ function createEvent(num) {
         time: '8:00–17:00 Hrs.',
         timeSize: 11,
         bgStyle: 'white',
+        customBg: '#ffffff',
+        customFg: '#1a1a1a',
         layoutStyle: 'stacked',
         artworkAlignment: 'center',
         artworks: [],
@@ -1453,6 +1504,7 @@ function defaultState() {
         bgImage: null,
         hotelLogo: null,
         activeEventTab: 0,
+        pptxColors: [],  // [{ slide: 1, color: '#fff', textColor: '#000' }]
         events: [createEvent(1), createEvent(2), createEvent(3)],
         editor: { isOpen: false, eventIdx: null, artworkId: null },
     };
@@ -1566,6 +1618,34 @@ function renderGlobalPanel() {
                 </div>
 
                 <div class="field">
+                    <label class="field-label">📊 อัปโหลด PowerPoint เพื่อแกะสีพื้นหลัง</label>
+                    <label class="btn btn-secondary" style="cursor:pointer;font-size:11px;padding:6px 10px;width:100%;text-align:center;display:block;">
+                        🎨 ${state.pptxColors.length > 0 ? `แกะแล้ว ${state.pptxColors.length} สี — อัปโหลดใหม่` : 'เลือกไฟล์ .pptx'}
+                        <input type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" style="display:none;" onchange="handlePptxUpload(this.files[0]); this.value='';">
+                    </label>
+                    ${state.pptxColors.length > 0 ? `
+                        <div style="font-size:10px;color:var(--text-muted);margin-top:6px;">
+                            คลิกที่สีเพื่อใช้กับ event ที่เปิดอยู่ (Event ${state.activeEventTab + 1})
+                        </div>
+                        <div class="pptx-palette">
+                            ${state.pptxColors.map(c => `
+                                <div class="pptx-swatch"
+                                     style="background:${c.color};"
+                                     data-slide="${c.slide}"
+                                     title="Slide ${c.slide} · ${c.color}"
+                                     onclick="applyPptxColorToEvent(${state.activeEventTab}, '${c.color}', '${c.textColor}')"></div>
+                            `).join('')}
+                        </div>
+                        <button class="btn btn-ghost" style="margin-top:6px;font-size:10px;padding:4px 8px;width:100%;" onclick="autoAssignPptxColors()">
+                            🪄 จับคู่ slide → event อัตโนมัติ
+                        </button>
+                        <button class="btn btn-danger" style="margin-top:4px;font-size:10px;padding:4px 8px;width:100%;" onclick="clearPptxColors()">
+                            ✕ ล้างสีที่แกะมา
+                        </button>
+                    ` : ''}
+                </div>
+
+                <div class="field">
                     <label class="field-label">โลโก้โรงแรม (Hotel Logo 200×176px)</label>
                     <div style="display:flex;gap:6px;align-items:center;">
                         <label class="btn btn-secondary" style="cursor:pointer;font-size:11px;padding:6px 10px;flex:1;text-align:center;">
@@ -1669,7 +1749,19 @@ function renderEventConfigPanel(idx) {
                     <button class="seg-btn ${ev.bgStyle === 'white' ? 'active' : ''}" onclick="updateField(${idx}, 'bgStyle', 'white')">⬜ ขาว</button>
                     <button class="seg-btn ${ev.bgStyle === 'navy' ? 'active' : ''}" onclick="updateField(${idx}, 'bgStyle', 'navy')">🟦 น้ำเงิน</button>
                     <button class="seg-btn ${ev.bgStyle === 'dark' ? 'active' : ''}" onclick="updateField(${idx}, 'bgStyle', 'dark')">⬛ ดำ</button>
+                    <button class="seg-btn ${ev.bgStyle === 'custom' ? 'active' : ''}" onclick="updateField(${idx}, 'bgStyle', 'custom')">🎨 เอง</button>
                 </div>
+                ${ev.bgStyle === 'custom' ? `
+                    <div class="color-picker-row">
+                        <input type="color" value="${ev.customBg}" oninput="updateField(${idx}, 'customBg', this.value); this.nextElementSibling.value = this.value;" title="สีพื้นหลัง">
+                        <input type="text" class="input" style="font-family:monospace;font-size:11px;" value="${ev.customBg}" oninput="updateField(${idx}, 'customBg', this.value); this.previousElementSibling.value = this.value;" placeholder="#RRGGBB">
+                    </div>
+                    <div class="color-picker-row">
+                        <input type="color" value="${ev.customFg}" oninput="updateField(${idx}, 'customFg', this.value); this.nextElementSibling.value = this.value;" title="สีตัวอักษร">
+                        <input type="text" class="input" style="font-family:monospace;font-size:11px;" value="${ev.customFg}" oninput="updateField(${idx}, 'customFg', this.value); this.previousElementSibling.value = this.value;" placeholder="#RRGGBB">
+                        <span style="font-size:10px;color:var(--text-muted);">ตัวอักษร</span>
+                    </div>
+                ` : ''}
             </div>
             <div class="field">
                 <label class="field-label">รูปแบบรายละเอียด (Detail Layout)</label>
@@ -1899,6 +1991,10 @@ function renderEventCard(ev, idx) {
     card.className = `event-card mode-${state.mode} bg-${ev.bgStyle}`;
     card.dataset.eventIdx = idx;
     card.style.flex = '1';
+    if (ev.bgStyle === 'custom') {
+        card.style.setProperty('--custom-bg', ev.customBg);
+        card.style.setProperty('--custom-fg', ev.customFg);
+    }
 
     const inner = document.createElement('div');
     inner.className = 'event-card-inner';
@@ -2195,11 +2291,12 @@ function updateZoom() {
 }
 
 function updateCanvasInfo() {
-    const o = state.orientation === 'portrait' ? '1080×1920px' : '1920×1080px';
-    const m = state.mode === 'single' ? 'Single Event' : state.mode === 'dual' ? 'Dual Event' : 'Triple Event';
-    const inner = state.orientation === 'portrait' ? ' · Inner Box: 995×1335px' : '';
+    const work = state.orientation === 'portrait' ? '1080×1920' : '1920×1080';
+    const out = state.orientation === 'portrait' ? '535×955' : '955×535';
+    const m = state.mode === 'single' ? 'Single' : state.mode === 'dual' ? 'Dual' : 'Triple';
+    const inner = state.orientation === 'portrait' ? ' · Inner: 995×1335' : '';
     document.getElementById('canvas-info-text').textContent =
-        `${state.orientation === 'portrait' ? 'Portrait' : 'Landscape'} · ${o} · ${m}${inner}`;
+        `${state.orientation === 'portrait' ? 'Portrait' : 'Landscape'} · Work ${work}px → Export ${out}px · ${m}${inner}`;
 }
 
 // ============================================================
@@ -2294,6 +2391,169 @@ function reorderArtwork(eventIdx, fromId, toId) {
 
 function getArtwork(eventIdx, artId) {
     return state.events[eventIdx].artworks.find(a => a.id === artId);
+}
+
+// ============================================================
+// POWERPOINT COLOR EXTRACTION
+// ============================================================
+async function handlePptxUpload(file) {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.pptx')) {
+        showToast('ต้องเป็นไฟล์ .pptx เท่านั้น', 'error');
+        return;
+    }
+    if (typeof JSZip === 'undefined') {
+        showToast('ไลบรารี JSZip ไม่พร้อม', 'error');
+        return;
+    }
+    showToast('กำลังแกะสีจาก PowerPoint...');
+    try {
+        const zip = await JSZip.loadAsync(file);
+
+        // Parse theme colors first (for schemeClr references)
+        const themeColors = {};
+        const themeFile = zip.file('ppt/theme/theme1.xml');
+        if (themeFile) {
+            const themeXml = await themeFile.async('string');
+            parseThemeColors(themeXml, themeColors);
+        }
+
+        // Find slide files and sort by slide number
+        const slideFiles = Object.keys(zip.files)
+            .filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))
+            .sort((a, b) => {
+                const na = parseInt(a.match(/slide(\d+)/)[1]);
+                const nb = parseInt(b.match(/slide(\d+)/)[1]);
+                return na - nb;
+            });
+
+        if (slideFiles.length === 0) {
+            showToast('ไม่พบ slide ในไฟล์ pptx นี้', 'error');
+            return;
+        }
+
+        const extracted = [];
+        for (let i = 0; i < slideFiles.length; i++) {
+            const xml = await zip.files[slideFiles[i]].async('string');
+            const color = extractSlideBgColor(xml, themeColors);
+            extracted.push({
+                slide: i + 1,
+                color: color,
+                textColor: pickContrastingTextColor(color),
+            });
+        }
+
+        state.pptxColors = extracted;
+        renderSidebar();
+        showToast(`แกะสีได้ ${extracted.length} สี — คลิกที่ swatch เพื่อใช้`, 'success');
+    } catch (err) {
+        console.error(err);
+        showToast('เกิดข้อผิดพลาดในการอ่านไฟล์ pptx', 'error');
+    }
+}
+
+function parseThemeColors(xml, out) {
+    // Theme has clrScheme with dk1, lt1, dk2, lt2, accent1..6, hlink, folHlink
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xml, 'text/xml');
+    const scheme = doc.getElementsByTagNameNS('*', 'clrScheme')[0];
+    if (!scheme) return;
+    Array.from(scheme.children).forEach(node => {
+        const tag = node.localName; // dk1, lt1, accent1 ...
+        const child = node.firstElementChild;
+        if (!child) return;
+        if (child.localName === 'srgbClr') {
+            out[tag] = '#' + child.getAttribute('val');
+        } else if (child.localName === 'sysClr') {
+            out[tag] = '#' + (child.getAttribute('lastClr') || 'FFFFFF');
+        }
+    });
+    // Aliases used by schemeClr references
+    if (out.lt1) { out.bg1 = out.lt1; out.tx2 = out.dk2 || out.dk1; }
+    if (out.dk1) { out.tx1 = out.dk1; }
+    if (out.lt2) { out.bg2 = out.lt2; }
+}
+
+function extractSlideBgColor(xml, themeColors) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xml, 'text/xml');
+
+    // 1. Try <p:bg> element directly
+    const bg = doc.getElementsByTagNameNS('*', 'bg')[0];
+    if (bg) {
+        const color = findColorIn(bg, themeColors);
+        if (color) return color;
+    }
+
+    // 2. Try first solid-fill shape (often a full-slide rectangle used as bg)
+    const shapes = doc.getElementsByTagNameNS('*', 'sp');
+    for (const shape of shapes) {
+        const fill = shape.getElementsByTagNameNS('*', 'solidFill')[0];
+        if (fill) {
+            const color = findColorIn(fill, themeColors);
+            if (color) return color;
+        }
+    }
+
+    // 3. Default white
+    return '#FFFFFF';
+}
+
+function findColorIn(el, themeColors) {
+    // srgbClr — direct hex
+    const srgb = el.getElementsByTagNameNS('*', 'srgbClr')[0];
+    if (srgb) return '#' + srgb.getAttribute('val').toUpperCase();
+    // schemeClr — reference into theme
+    const scheme = el.getElementsByTagNameNS('*', 'schemeClr')[0];
+    if (scheme) {
+        const ref = scheme.getAttribute('val');
+        if (themeColors[ref]) return themeColors[ref].toUpperCase();
+    }
+    // sysClr
+    const sys = el.getElementsByTagNameNS('*', 'sysClr')[0];
+    if (sys && sys.getAttribute('lastClr')) {
+        return '#' + sys.getAttribute('lastClr').toUpperCase();
+    }
+    return null;
+}
+
+function pickContrastingTextColor(hex) {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    // Relative luminance
+    const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return lum > 0.55 ? '#1a1a1a' : '#f5f5f5';
+}
+
+function applyPptxColorToEvent(eventIdx, color, textColor) {
+    const ev = state.events[eventIdx];
+    ev.bgStyle = 'custom';
+    ev.customBg = color;
+    ev.customFg = textColor;
+    renderAll();
+    showToast(`ใช้สี ${color} กับ Event ${eventIdx + 1}`, 'success');
+}
+
+function autoAssignPptxColors() {
+    const cap = MODE_CAPS[state.mode];
+    const colors = state.pptxColors;
+    if (colors.length === 0) return;
+    for (let i = 0; i < cap; i++) {
+        const c = colors[i] || colors[colors.length - 1];
+        state.events[i].bgStyle = 'custom';
+        state.events[i].customBg = c.color;
+        state.events[i].customFg = c.textColor;
+    }
+    renderAll();
+    showToast(`จับคู่ ${cap} สีให้ event แล้ว`, 'success');
+}
+
+function clearPptxColors() {
+    state.pptxColors = [];
+    renderSidebar();
+    showToast('ล้างสีที่แกะมาแล้ว');
 }
 
 function getArtworkVisual(art) {
@@ -2561,19 +2821,24 @@ async function exportAsPNG() {
     const prevTransform = canvas.style.transform;
     canvas.style.transform = 'none';
 
-    const outW = state.orientation === 'portrait' ? 1080 : 1920;
-    const outH = state.orientation === 'portrait' ? 1920 : 1080;
+    // Working canvas size (DOM pixels)
+    const canvasW = state.orientation === 'portrait' ? 1080 : 1920;
+    const canvasH = state.orientation === 'portrait' ? 1920 : 1080;
+    // Target output size — downscaled
+    const outW = state.orientation === 'portrait' ? 535 : 955;
+    const outH = state.orientation === 'portrait' ? 955 : 535;
+    const exportScale = outW / canvasW;
 
     try {
         const snapshot = await html2canvas(canvas, {
-            scale: 1,
+            scale: exportScale,
             useCORS: true,
             backgroundColor: null,
             logging: false,
-            width: outW,
-            height: outH,
-            windowWidth: outW,
-            windowHeight: outH,
+            width: canvasW,
+            height: canvasH,
+            windowWidth: canvasW,
+            windowHeight: canvasH,
         });
         const link = document.createElement('a');
         link.download = `Souphattra_Sign_${outW}x${outH}_${Date.now()}.png`;
