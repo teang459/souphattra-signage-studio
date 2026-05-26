@@ -637,18 +637,19 @@
             margin-top: 4px;
         }
         .ornament-icon {
-            width: 200px; height: 176px;
+            width: var(--logo-size, 200px); height: calc(var(--logo-size, 200px) * 0.88);
             margin: 0 auto 8px;
             display: block;
             color: #1a1a1a;
-            transition: color 0.3s;
+            transition: color 0.3s, width 0.2s, height 0.2s;
             object-fit: contain;
         }
         .hotel-logo-img {
-            width: 200px; height: 176px;
+            width: var(--logo-size, 200px); height: calc(var(--logo-size, 200px) * 0.88);
             margin: 0 auto 8px;
             display: block;
             object-fit: contain;
+            transition: width 0.2s, height 0.2s;
         }
         .hotel-name-main {
             font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
@@ -693,6 +694,8 @@
             z-index: 10;
             position: relative;
             overflow: hidden;
+            transform: translateY(var(--box-offset-y, 0px));
+            transition: transform 0.2s;
         }
         /* Landscape keeps flexible sizing */
         .sign-canvas.landscape .sign-workspace {
@@ -709,9 +712,10 @@
         }
         .footer-decor {
             color: var(--gold);
-            font-size: 14px;
+            font-size: var(--footer-size, 14px);
             letter-spacing: 0.4em;
             font-family: serif;
+            transition: font-size 0.2s;
         }
 
         /* ============================================================
@@ -1370,7 +1374,9 @@ function createEvent(num) {
         room: 'Souphattra Room 1',
         roomSize: 48,
         date: '26th May 2026',
+        dateSize: 13,
         time: '8:00–17:00 Hrs.',
+        timeSize: 11,
         bgStyle: 'white',
         layoutStyle: 'stacked',
         artworkAlignment: 'center',
@@ -1438,7 +1444,11 @@ function defaultState() {
         theme: 'light',
         showBorder: true,
         showWatermark: true,
+        showFooter: true,
         canvasPadding: 24,
+        headerLogoSize: 200,
+        footerSize: 14,
+        boxOffsetY: 0,
         zoom: 0.3,
         bgImage: null,
         hotelLogo: null,
@@ -1575,6 +1585,31 @@ function renderGlobalPanel() {
                     <input type="range" class="slider" min="8" max="80" value="${state.canvasPadding}" oninput="adjustPadding(this.value)">
                 </div>
 
+                <div class="field">
+                    <label class="field-label">
+                        ขนาดโลโก้หัวป้าย (Header Logo)
+                        <span id="lbl-logo-size" style="float:right;font-family:monospace;color:var(--gold);">${state.headerLogoSize}px</span>
+                    </label>
+                    <input type="range" class="slider" min="60" max="400" value="${state.headerLogoSize}" oninput="adjustHeaderLogoSize(this.value)">
+                </div>
+
+                <div class="field">
+                    <label class="field-label">
+                        ขนาด Footer (❖ ❖ ❖)
+                        <span id="lbl-footer-size" style="float:right;font-family:monospace;color:var(--gold);">${state.footerSize}px</span>
+                    </label>
+                    <input type="range" class="slider" min="8" max="60" value="${state.footerSize}" oninput="adjustFooterSize(this.value)">
+                </div>
+
+                <div class="field">
+                    <label class="field-label">
+                        ตำแหน่งแนวตั้งของกล่องใน (Box Y-Offset)
+                        <span id="lbl-box-offset" style="float:right;font-family:monospace;color:var(--gold);">${state.boxOffsetY}px</span>
+                    </label>
+                    <input type="range" class="slider" min="-200" max="200" value="${state.boxOffsetY}" oninput="adjustBoxOffset(this.value)">
+                    <div style="font-size:9px;color:var(--text-muted);margin-top:3px;">📦 กล่องใน fix ที่ 995×1335px (ปรับขนาดไม่ได้, แต่เลื่อนขึ้น-ลงได้)</div>
+                </div>
+
                 <label class="check-row">
                     <input type="checkbox" ${state.showBorder ? 'checked' : ''} onchange="toggleBorder()">
                     แสดงเส้นขอบทอง (Gold Frame Border)
@@ -1582,6 +1617,10 @@ function renderGlobalPanel() {
                 <label class="check-row">
                     <input type="checkbox" ${state.showWatermark ? 'checked' : ''} onchange="toggleWatermark()">
                     แสดงลายน้ำ Souphattra (Watermark)
+                </label>
+                <label class="check-row">
+                    <input type="checkbox" ${state.showFooter ? 'checked' : ''} onchange="toggleFooter()">
+                    แสดง Footer (❖ ❖ ❖)
                 </label>
             </div>
         </div>
@@ -1752,6 +1791,22 @@ function renderEventConfigPanel(idx) {
                             oninput="updateField(${idx}, 'time', this.value)">
                     </div>
                 </div>
+                <div class="grid-2">
+                    <div class="field">
+                        <label class="field-label">ขนาด Date</label>
+                        <div class="slider-row">
+                            <input type="range" class="slider" min="6" max="60" value="${ev.dateSize || 13}" oninput="updateField(${idx}, 'dateSize', +this.value); this.nextElementSibling.textContent = this.value + 'px';">
+                            <span class="slider-value">${ev.dateSize || 13}px</span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">ขนาด Time</label>
+                        <div class="slider-row">
+                            <input type="range" class="slider" min="6" max="60" value="${ev.timeSize || 11}" oninput="updateField(${idx}, 'timeSize', +this.value); this.nextElementSibling.textContent = this.value + 'px';">
+                            <span class="slider-value">${ev.timeSize || 11}px</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -1913,6 +1968,8 @@ function renderTitleArea(ev) {
 
 function renderDetailsArea(ev) {
     const ms = MODE_SCALE[state.mode];
+    const dateSize = ev.dateSize || 13;
+    const timeSize = ev.timeSize || 11;
     if (ev.layoutStyle === 'stacked') {
         const wrap = document.createElement('div');
         wrap.className = 'event-details-stacked';
@@ -1921,8 +1978,8 @@ function renderDetailsArea(ev) {
             <div class="detail-floor" style="font-size:${ev.floorSize * ms.floor}px;">${formatOrdinal(ev.floor)}</div>
             <div class="detail-divider"></div>
             <div class="detail-room" style="font-size:${ev.roomSize * ms.room}px;">${escapeHTML(ev.room)}</div>
-            <div class="detail-date" style="font-size:${13 * ms.date}px;">${escapeHTML(ev.date)}</div>
-            <div class="detail-time" style="font-size:${11 * ms.date}px;">${escapeHTML(ev.time)}</div>
+            <div class="detail-date" style="font-size:${dateSize * ms.date}px;">${escapeHTML(ev.date)}</div>
+            <div class="detail-time" style="font-size:${timeSize * ms.date}px;">${escapeHTML(ev.time)}</div>
         `;
         return wrap;
     } else {
@@ -1940,8 +1997,8 @@ function renderDetailsArea(ev) {
                 </div>
                 <div class="col-item">
                     <span class="col-label">Schedule</span>
-                    <span class="col-value" style="font-size:${10 * ms.date}px;">${escapeHTML(ev.date)}</span>
-                    <span class="col-sub" style="font-size:${9 * ms.date}px;">${escapeHTML(ev.time)}</span>
+                    <span class="col-value" style="font-size:${dateSize * ms.date * 0.77}px;">${escapeHTML(ev.date)}</span>
+                    <span class="col-sub" style="font-size:${timeSize * ms.date * 0.82}px;">${escapeHTML(ev.time)}</span>
                 </div>
             </div>
         `;
@@ -1990,6 +2047,13 @@ function applyTheme() {
     const ornament = document.getElementById('hotel-ornament');
     const logoImg = document.getElementById('hotel-logo-img');
 
+    canvas.style.setProperty('--logo-size', `${state.headerLogoSize}px`);
+    canvas.style.setProperty('--footer-size', `${state.footerSize}px`);
+    canvas.style.setProperty('--box-offset-y', `${state.boxOffsetY}px`);
+
+    const footer = document.querySelector('.sign-footer');
+    if (footer) footer.style.display = state.showFooter ? '' : 'none';
+
     if (state.bgImage) {
         canvas.style.background = t.canvas;
         canvas.style.backgroundImage = `url(${state.bgImage})`;
@@ -2033,6 +2097,33 @@ function adjustPadding(v) {
     document.getElementById('sign-canvas').style.padding = `${v}px`;
     const lbl = document.getElementById('lbl-padding');
     if (lbl) lbl.textContent = `${v}px`;
+}
+
+function adjustHeaderLogoSize(v) {
+    state.headerLogoSize = +v;
+    document.getElementById('sign-canvas').style.setProperty('--logo-size', `${v}px`);
+    const lbl = document.getElementById('lbl-logo-size');
+    if (lbl) lbl.textContent = `${v}px`;
+}
+
+function adjustFooterSize(v) {
+    state.footerSize = +v;
+    document.getElementById('sign-canvas').style.setProperty('--footer-size', `${v}px`);
+    const lbl = document.getElementById('lbl-footer-size');
+    if (lbl) lbl.textContent = `${v}px`;
+}
+
+function adjustBoxOffset(v) {
+    state.boxOffsetY = +v;
+    document.getElementById('sign-canvas').style.setProperty('--box-offset-y', `${v}px`);
+    const lbl = document.getElementById('lbl-box-offset');
+    if (lbl) lbl.textContent = `${v}px`;
+}
+
+function toggleFooter() {
+    state.showFooter = !state.showFooter;
+    const footer = document.querySelector('.sign-footer');
+    if (footer) footer.style.display = state.showFooter ? '' : 'none';
 }
 
 function handleBgUpload(file) {
@@ -2455,9 +2546,11 @@ async function exportAsPNG() {
     }
     showToast('กำลังสร้างภาพ PNG...');
     const canvas = document.getElementById('sign-canvas');
-    const prevZoom = state.zoom;
     const prevTransform = canvas.style.transform;
     canvas.style.transform = 'none';
+
+    const outW = state.orientation === 'portrait' ? 1080 : 1920;
+    const outH = state.orientation === 'portrait' ? 1920 : 1080;
 
     try {
         const snapshot = await html2canvas(canvas, {
@@ -2465,20 +2558,22 @@ async function exportAsPNG() {
             useCORS: true,
             backgroundColor: null,
             logging: false,
-            width: 1080,
-            height: 1920,
+            width: outW,
+            height: outH,
+            windowWidth: outW,
+            windowHeight: outH,
         });
         const link = document.createElement('a');
-        link.download = `Souphattra_Sign_${Date.now()}.png`;
+        link.download = `Souphattra_Sign_${outW}x${outH}_${Date.now()}.png`;
         link.href = snapshot.toDataURL('image/png');
         link.click();
-        showToast('บันทึก PNG สำเร็จ!', 'success');
+        showToast(`บันทึก PNG ${outW}×${outH}px สำเร็จ!`, 'success');
     } catch (err) {
         console.error(err);
         showToast('เกิดข้อผิดพลาดในการ export', 'error');
     } finally {
         canvas.style.transform = prevTransform;
-        state.zoom = prevZoom;
+        updateZoom();
     }
 }
 
