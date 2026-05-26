@@ -2982,66 +2982,69 @@ async function exportAsPNG() {
         showToast('ไลบรารี html2canvas ไม่พร้อม', 'error');
         return;
     }
-    showToast('กำลังเตรียม PNG... กรุณารอสักครู่');
+    showToast('กำลังเตรียม PNG... กรุณารอ');
 
-    // Wait for fonts (Playfair, Phetsarath, etc.) to be ready,
-    // otherwise the export renders with fallback fonts.
+    // Wait for fonts (Playfair, Phetsarath, etc.) to be fully loaded.
     if (document.fonts && document.fonts.ready) {
         try { await document.fonts.ready; } catch (e) {}
     }
-    // Small delay so any pending layout/transition settles.
-    await new Promise(r => setTimeout(r, 80));
 
     const canvas = document.getElementById('sign-canvas');
+    const wrap = document.getElementById('canvas-wrap');
     const outW = state.orientation === 'portrait' ? 1080 : 1920;
     const outH = state.orientation === 'portrait' ? 1920 : 1080;
 
-    // Off-screen stage. Use `left: -99999px` (NOT opacity:0 — that makes
-    // the captured pixels transparent).
-    const stage = document.createElement('div');
-    stage.style.cssText = `
-        position: fixed;
-        left: -99999px;
-        top: 0;
-        width: ${outW}px;
-        height: ${outH}px;
-        background: transparent;
-    `;
+    // Save state, then un-zoom the actual canvas (no cloning — that lost
+    // CSS-variable values + broke absolute-positioned children like border
+    // and watermark).
+    const prev = {
+        transform: canvas.style.transform,
+        transition: canvas.style.transition,
+        wrapOverflow: wrap.style.overflow,
+        wrapPadding: wrap.style.padding,
+        wrapScrollTop: wrap.scrollTop,
+        wrapScrollLeft: wrap.scrollLeft,
+    };
+    canvas.style.transform = 'none';
+    canvas.style.transition = 'none';
+    wrap.style.overflow = 'visible';
+    wrap.style.padding = '0';
 
-    const clone = canvas.cloneNode(true);
-    clone.style.transform = 'none';
-    clone.style.position = 'static';
-    clone.style.margin = '0';
-    clone.style.boxShadow = 'none';
-    clone.style.transition = 'none';
-    // Force the clone to its full output size regardless of CSS class state
-    clone.style.width = `${outW}px`;
-    clone.style.height = `${outH}px`;
-    stage.appendChild(clone);
-    document.body.appendChild(stage);
-
-    // Reflow + second tick so CSS variables + custom properties apply on the clone
-    void clone.offsetHeight;
+    // Two frames so the layout fully settles before capture.
     await new Promise(r => requestAnimationFrame(r));
+    await new Promise(r => requestAnimationFrame(r));
+    await new Promise(r => setTimeout(r, 50));
 
     try {
-        const snapshot = await html2canvas(clone, {
+        const snapshot = await html2canvas(canvas, {
             scale: 1,
             useCORS: true,
             allowTaint: true,
             backgroundColor: null,
             logging: false,
+            // Capture the element exactly at its natural rendered size.
+            width: outW,
+            height: outH,
+            scrollX: 0,
+            scrollY: 0,
         });
+
         const link = document.createElement('a');
-        link.download = `Souphattra_Sign_${outW}x${outH}_${Date.now()}.png`;
+        link.download = `Souphattra_Sign_${snapshot.width}x${snapshot.height}_${Date.now()}.png`;
         link.href = snapshot.toDataURL('image/png');
         link.click();
-        showToast(`บันทึก PNG ${outW}×${outH}px สำเร็จ!`, 'success');
+        showToast(`บันทึก PNG ${snapshot.width}×${snapshot.height}px สำเร็จ!`, 'success');
     } catch (err) {
         console.error(err);
-        showToast('เกิดข้อผิดพลาดในการ export: ' + err.message, 'error');
+        showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
     } finally {
-        document.body.removeChild(stage);
+        canvas.style.transform = prev.transform;
+        canvas.style.transition = prev.transition;
+        wrap.style.overflow = prev.wrapOverflow;
+        wrap.style.padding = prev.wrapPadding;
+        wrap.scrollTop = prev.wrapScrollTop;
+        wrap.scrollLeft = prev.wrapScrollLeft;
+        updateZoom();
     }
 }
 
