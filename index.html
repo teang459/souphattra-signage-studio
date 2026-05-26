@@ -296,6 +296,27 @@
             min-width: 42px;
             text-align: right;
         }
+        input.slider-value {
+            width: 56px;
+            background: var(--surface-3);
+            border: 1px solid transparent;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-family: ui-monospace, monospace;
+            font-size: 10px;
+            color: var(--gold);
+            text-align: right;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        input.slider-value:focus {
+            border-color: var(--gold);
+            background: var(--surface-2);
+        }
+        input.slider-value::-webkit-inner-spin-button,
+        input.slider-value::-webkit-outer-spin-button {
+            opacity: 0.4;
+        }
 
         .check-row {
             display: flex;
@@ -1247,7 +1268,7 @@
         </div>
 
         <div class="preview-canvas-wrap" id="canvas-wrap">
-            <div id="sign-canvas" class="sign-canvas portrait" style="padding: 24px;">
+            <div id="sign-canvas" class="sign-canvas portrait" style="padding: 24px 0;">
                 <div id="sign-border" class="sign-border"></div>
 
                 <div id="sign-watermark" class="sign-watermark">
@@ -1327,7 +1348,7 @@
                     <div class="control-label">🔍 ขยาย/ย่อ (Scale)</div>
                     <div class="slider-row">
                         <input type="range" class="slider" id="mod-scale" min="0.3" max="3" step="0.05" value="1" oninput="modalUpdateScale()">
-                        <span class="slider-value" id="mod-scale-val">1.00×</span>
+                        <input type="number" class="slider-value" id="mod-scale-val" step="0.05" min="0.1" max="10" value="1" oninput="modalUpdateScaleFromInput(this.value)">
                     </div>
                 </div>
 
@@ -1335,7 +1356,7 @@
                     <div class="control-label">🔄 หมุน (Rotation)</div>
                     <div class="slider-row">
                         <input type="range" class="slider" id="mod-rot" min="-180" max="180" step="1" value="0" oninput="modalUpdateRotation()">
-                        <span class="slider-value" id="mod-rot-val">0°</span>
+                        <input type="number" class="slider-value" id="mod-rot-val" step="1" min="-360" max="360" value="0" oninput="modalUpdateRotationFromInput(this.value)">
                     </div>
                 </div>
 
@@ -1402,9 +1423,9 @@ const MODE_SCALE = {
 };
 
 const BG_THEMES = {
-    light: { canvas: '#FAF9F5', borderColor: 'rgba(168, 137, 94, 0.65)', textColor: '#1a1a1a', goldFill: '#FAF9F5', wmColor: '#1a1a1a', wmOpacity: 0.05 },
-    dark:  { canvas: '#111111', borderColor: 'rgba(197, 168, 128, 0.65)', textColor: '#f5f5f5', goldFill: '#111111', wmColor: '#c5a880', wmOpacity: 0.06 },
-    sepia: { canvas: '#F5F2EB', borderColor: 'rgba(92, 77, 60, 0.55)', textColor: '#4A3B2C', goldFill: '#F5F2EB', wmColor: '#5C4D3C', wmOpacity: 0.055 },
+    light: { canvas: '#FAF9F5', borderColor: '#A8895E', textColor: '#1a1a1a', goldFill: '#FAF9F5', wmColor: '#1a1a1a', wmOpacity: 0.05 },
+    dark:  { canvas: '#111111', borderColor: '#C5A880', textColor: '#f5f5f5', goldFill: '#111111', wmColor: '#c5a880', wmOpacity: 0.06 },
+    sepia: { canvas: '#F5F2EB', borderColor: '#5C4D3C', textColor: '#4A3B2C', goldFill: '#F5F2EB', wmColor: '#5C4D3C', wmOpacity: 0.055 },
 };
 
 // ============================================================
@@ -1521,6 +1542,8 @@ function defaultState() {
         orientation: 'portrait',
         theme: 'light',
         showBorder: true,
+        borderColor: '#A8895E',
+        borderWidth: 2,
         showWatermark: true,
         showFooter: true,
         showHotelName: false,
@@ -1737,34 +1760,48 @@ function renderGlobalPanel() {
                 </div>
 
                 <div class="field">
-                    <label class="field-label">
-                        ขนาด Ornament/โลโก้หัวป้าย
-                        <span id="lbl-logo-size" style="float:right;font-family:monospace;color:var(--gold);">${state.headerLogoSize}px</span>
-                    </label>
-                    <input type="range" class="slider" min="40" max="400" value="${state.headerLogoSize}" oninput="adjustHeaderLogoSize(this.value)">
+                    <label class="field-label">ขนาด Ornament/โลโก้หัวป้าย</label>
+                    <div class="slider-row">
+                        <input type="range" class="slider" min="40" max="400" value="${state.headerLogoSize}" oninput="adjustHeaderLogoSize(this.value)">
+                        <input type="number" class="slider-value" min="0" max="800" value="${state.headerLogoSize}" oninput="adjustHeaderLogoSize(this.value)">
+                    </div>
                 </div>
 
                 <div class="field">
-                    <label class="field-label">
-                        ขนาด Footer (❖ ❖ ❖)
-                        <span id="lbl-footer-size" style="float:right;font-family:monospace;color:var(--gold);">${state.footerSize}px</span>
-                    </label>
-                    <input type="range" class="slider" min="8" max="60" value="${state.footerSize}" oninput="adjustFooterSize(this.value)">
+                    <label class="field-label">ขนาด Footer (❖ ❖ ❖)</label>
+                    <div class="slider-row">
+                        <input type="range" class="slider" min="8" max="60" value="${state.footerSize}" oninput="adjustFooterSize(this.value)">
+                        <input type="number" class="slider-value" min="0" max="120" value="${state.footerSize}" oninput="adjustFooterSize(this.value)">
+                    </div>
                 </div>
 
                 <div class="field">
-                    <label class="field-label">
-                        ตำแหน่งแนวตั้งของกล่องใน (Box Y-Offset)
-                        <span id="lbl-box-offset" style="float:right;font-family:monospace;color:var(--gold);">${state.boxOffsetY}px</span>
-                    </label>
-                    <input type="range" class="slider" min="-200" max="200" value="${state.boxOffsetY}" oninput="adjustBoxOffset(this.value)">
-                    <div style="font-size:9px;color:var(--text-muted);margin-top:3px;">📦 กล่องใน fix ที่ 995×1335px (ปรับขนาดไม่ได้, แต่เลื่อนขึ้น-ลงได้)</div>
+                    <label class="field-label">ตำแหน่งแนวตั้งของกล่องใน (Box Y-Offset)</label>
+                    <div class="slider-row">
+                        <input type="range" class="slider" min="-200" max="200" value="${state.boxOffsetY}" oninput="adjustBoxOffset(this.value)">
+                        <input type="number" class="slider-value" min="-500" max="500" value="${state.boxOffsetY}" oninput="adjustBoxOffset(this.value)">
+                    </div>
+                    <div style="font-size:9px;color:var(--text-muted);margin-top:3px;">📦 กล่องใน fix ที่ 995×1335px (เลื่อนขึ้น-ลงได้)</div>
                 </div>
 
                 <label class="check-row">
                     <input type="checkbox" ${state.showBorder ? 'checked' : ''} onchange="toggleBorder()">
                     แสดงเส้นขอบทอง (Gold Frame Border)
                 </label>
+                ${state.showBorder ? `
+                    <div class="field" style="margin-top:6px;">
+                        <label class="field-label">สีกรอบ + ความหนา (Border)</label>
+                        <div class="color-picker-row">
+                            <input type="color" value="${state.borderColor}" oninput="setBorderColor(this.value); this.nextElementSibling.value = this.value;" title="สีกรอบ">
+                            <input type="text" class="input" style="font-family:monospace;font-size:11px;" value="${state.borderColor}" oninput="setBorderColor(this.value); this.previousElementSibling.value = this.value;" placeholder="#RRGGBB">
+                        </div>
+                        <div class="slider-row" style="margin-top:6px;">
+                            <span style="font-size:10px;color:var(--text-muted);">หนา</span>
+                            <input type="range" class="slider" min="0" max="20" value="${state.borderWidth || 2}" oninput="adjustBorderWidth(this.value)">
+                            <input type="number" class="slider-value" min="0" max="40" value="${state.borderWidth || 2}" oninput="adjustBorderWidth(this.value)">
+                        </div>
+                    </div>
+                ` : ''}
                 <label class="check-row">
                     <input type="checkbox" ${state.showWatermark ? 'checked' : ''} onchange="toggleWatermark()">
                     แสดงลายน้ำ Souphattra (Watermark)
@@ -1896,8 +1933,8 @@ function renderEventConfigPanel(idx) {
                         oninput="updateTitle(${idx}, 'lao', this.value)">${escapeHTML(ev.title.lao)}</textarea>
                     <div class="slider-row">
                         <span style="font-size:10px;color:var(--text-muted);">ขนาด</span>
-                        <input type="range" class="slider" min="10" max="120" value="${ev.titleSize}" oninput="updateTitleSize(${idx}, 'lao', this.value); this.nextElementSibling.textContent = this.value + 'px';">
-                        <span class="slider-value">${ev.titleSize}px</span>
+                        <input type="range" class="slider" min="10" max="200" value="${ev.titleSize}" oninput="updateTitleSize(${idx}, 'lao', this.value); this.nextElementSibling.value = this.value;">
+                        <input type="number" class="slider-value" min="6" max="400" value="${ev.titleSize}" oninput="updateTitleSize(${idx}, 'lao', this.value); this.previousElementSibling.value = this.value;">
                     </div>
                 </div>
                 <div class="field">
@@ -1907,8 +1944,8 @@ function renderEventConfigPanel(idx) {
                         oninput="updateTitle(${idx}, 'english', this.value)">${escapeHTML(ev.title.english)}</textarea>
                     <div class="slider-row">
                         <span style="font-size:10px;color:var(--text-muted);">ขนาด</span>
-                        <input type="range" class="slider" min="8" max="80" value="${ev.titleEnSize}" oninput="updateTitleSize(${idx}, 'english', this.value); this.nextElementSibling.textContent = this.value + 'px';">
-                        <span class="slider-value">${ev.titleEnSize}px</span>
+                        <input type="range" class="slider" min="8" max="120" value="${ev.titleEnSize}" oninput="updateTitleSize(${idx}, 'english', this.value); this.nextElementSibling.value = this.value;">
+                        <input type="number" class="slider-value" min="6" max="200" value="${ev.titleEnSize}" oninput="updateTitleSize(${idx}, 'english', this.value); this.previousElementSibling.value = this.value;">
                     </div>
                 </div>
             </div>
@@ -1934,15 +1971,15 @@ function renderEventConfigPanel(idx) {
                     <div class="field">
                         <label class="field-label">ขนาด Floor</label>
                         <div class="slider-row">
-                            <input type="range" class="slider" min="20" max="200" value="${ev.floorSize}" oninput="updateField(${idx}, 'floorSize', +this.value); this.nextElementSibling.textContent = this.value + 'px';">
-                            <span class="slider-value">${ev.floorSize}px</span>
+                            <input type="range" class="slider" min="20" max="300" value="${ev.floorSize}" oninput="updateField(${idx}, 'floorSize', +this.value); this.nextElementSibling.value = this.value;">
+                            <input type="number" class="slider-value" min="6" max="500" value="${ev.floorSize}" oninput="updateField(${idx}, 'floorSize', +this.value); this.previousElementSibling.value = this.value;">
                         </div>
                     </div>
                     <div class="field">
                         <label class="field-label">ขนาด Room</label>
                         <div class="slider-row">
-                            <input type="range" class="slider" min="10" max="120" value="${ev.roomSize}" oninput="updateField(${idx}, 'roomSize', +this.value); this.nextElementSibling.textContent = this.value + 'px';">
-                            <span class="slider-value">${ev.roomSize}px</span>
+                            <input type="range" class="slider" min="10" max="200" value="${ev.roomSize}" oninput="updateField(${idx}, 'roomSize', +this.value); this.nextElementSibling.value = this.value;">
+                            <input type="number" class="slider-value" min="6" max="300" value="${ev.roomSize}" oninput="updateField(${idx}, 'roomSize', +this.value); this.previousElementSibling.value = this.value;">
                         </div>
                     </div>
                 </div>
@@ -1962,15 +1999,15 @@ function renderEventConfigPanel(idx) {
                     <div class="field">
                         <label class="field-label">ขนาด Date</label>
                         <div class="slider-row">
-                            <input type="range" class="slider" min="6" max="60" value="${ev.dateSize || 13}" oninput="updateField(${idx}, 'dateSize', +this.value); this.nextElementSibling.textContent = this.value + 'px';">
-                            <span class="slider-value">${ev.dateSize || 13}px</span>
+                            <input type="range" class="slider" min="6" max="100" value="${ev.dateSize || 13}" oninput="updateField(${idx}, 'dateSize', +this.value); this.nextElementSibling.value = this.value;">
+                            <input type="number" class="slider-value" min="6" max="200" value="${ev.dateSize || 13}" oninput="updateField(${idx}, 'dateSize', +this.value); this.previousElementSibling.value = this.value;">
                         </div>
                     </div>
                     <div class="field">
                         <label class="field-label">ขนาด Time</label>
                         <div class="slider-row">
-                            <input type="range" class="slider" min="6" max="60" value="${ev.timeSize || 11}" oninput="updateField(${idx}, 'timeSize', +this.value); this.nextElementSibling.textContent = this.value + 'px';">
-                            <span class="slider-value">${ev.timeSize || 11}px</span>
+                            <input type="range" class="slider" min="6" max="100" value="${ev.timeSize || 11}" oninput="updateField(${idx}, 'timeSize', +this.value); this.nextElementSibling.value = this.value;">
+                            <input type="number" class="slider-value" min="6" max="200" value="${ev.timeSize || 11}" oninput="updateField(${idx}, 'timeSize', +this.value); this.previousElementSibling.value = this.value;">
                         </div>
                     </div>
                 </div>
@@ -2205,9 +2242,25 @@ function setOrientation(o) {
 
 function setTheme(t) {
     state.theme = t;
+    // Reset border color to the new theme's default so it stays in sync
+    state.borderColor = BG_THEMES[t].borderColor;
     renderSidebar();
     applyTheme();
     showToast(`เปลี่ยนธีม: ${t === 'light' ? 'สว่าง' : t === 'dark' ? 'มืด' : 'ครีม'}`);
+}
+
+function setBorderColor(color) {
+    state.borderColor = color;
+    document.getElementById('sign-border').style.borderColor = color;
+}
+
+function adjustBorderWidth(v) {
+    const n = Math.max(0, Math.min(40, +v || 0));
+    state.borderWidth = n;
+    document.getElementById('sign-border').style.borderWidth = `${n}px`;
+    document.querySelectorAll('input[oninput*="adjustBorderWidth"]').forEach(input => {
+        if (+input.value !== n) input.value = n;
+    });
 }
 
 function setFont(fontName) {
@@ -2243,7 +2296,8 @@ function applyTheme() {
         canvas.style.backgroundImage = '';
     }
 
-    border.style.borderColor = t.borderColor;
+    border.style.borderColor = state.borderColor || t.borderColor;
+    border.style.borderWidth = `${state.borderWidth || 2}px`;
     wm.style.color = t.wmColor;
     wm.style.opacity = state.showWatermark ? t.wmOpacity : 0;
     ornament.style.color = t.textColor;
@@ -2285,34 +2339,40 @@ function toggleWatermark() {
 function adjustPadding(v) {
     const n = Math.max(0, Math.min(500, +v || 0));
     state.canvasPadding = n;
-    document.getElementById('sign-canvas').style.padding = `${n}px`;
+    // Top & bottom only (left/right stay at 0 so the gold frame keeps full width)
+    document.getElementById('sign-canvas').style.padding = `${n}px 0`;
     const lbl = document.getElementById('lbl-padding');
     if (lbl) lbl.textContent = `${n}px`;
-    // Sync slider and number input
     document.querySelectorAll('input[oninput*="adjustPadding"]').forEach(input => {
         if (+input.value !== n) input.value = n;
     });
 }
 
 function adjustHeaderLogoSize(v) {
-    state.headerLogoSize = +v;
-    document.getElementById('sign-canvas').style.setProperty('--logo-size', `${v}px`);
-    const lbl = document.getElementById('lbl-logo-size');
-    if (lbl) lbl.textContent = `${v}px`;
+    const n = Math.max(0, Math.min(800, +v || 0));
+    state.headerLogoSize = n;
+    document.getElementById('sign-canvas').style.setProperty('--logo-size', `${n}px`);
+    document.querySelectorAll('input[oninput*="adjustHeaderLogoSize"]').forEach(inp => {
+        if (+inp.value !== n) inp.value = n;
+    });
 }
 
 function adjustFooterSize(v) {
-    state.footerSize = +v;
-    document.getElementById('sign-canvas').style.setProperty('--footer-size', `${v}px`);
-    const lbl = document.getElementById('lbl-footer-size');
-    if (lbl) lbl.textContent = `${v}px`;
+    const n = Math.max(0, Math.min(120, +v || 0));
+    state.footerSize = n;
+    document.getElementById('sign-canvas').style.setProperty('--footer-size', `${n}px`);
+    document.querySelectorAll('input[oninput*="adjustFooterSize"]').forEach(inp => {
+        if (+inp.value !== n) inp.value = n;
+    });
 }
 
 function adjustBoxOffset(v) {
-    state.boxOffsetY = +v;
-    document.getElementById('sign-canvas').style.setProperty('--box-offset-y', `${v}px`);
-    const lbl = document.getElementById('lbl-box-offset');
-    if (lbl) lbl.textContent = `${v}px`;
+    const n = Math.max(-500, Math.min(500, +v || 0));
+    state.boxOffsetY = n;
+    document.getElementById('sign-canvas').style.setProperty('--box-offset-y', `${n}px`);
+    document.querySelectorAll('input[oninput*="adjustBoxOffset"]').forEach(inp => {
+        if (+inp.value !== n) inp.value = n;
+    });
 }
 
 function toggleFooter() {
@@ -2744,9 +2804,9 @@ function openArtworkEditor(eventIdx, artId) {
     document.getElementById('mod-w').value = Math.round(art.width);
     document.getElementById('mod-h').value = Math.round(art.height);
     document.getElementById('mod-scale').value = art.scale;
-    document.getElementById('mod-scale-val').textContent = `${(+art.scale).toFixed(2)}×`;
+    document.getElementById('mod-scale-val').value = (+art.scale).toFixed(2);
     document.getElementById('mod-rot').value = art.rotation;
-    document.getElementById('mod-rot-val').textContent = `${art.rotation}°`;
+    document.getElementById('mod-rot-val').value = art.rotation;
     document.getElementById('mod-aspect').checked = art.keepRatio;
     document.getElementById('mod-banner').checked = art.isBanner;
 
@@ -2818,7 +2878,16 @@ function modalUpdateScale() {
     const art = currentEditorArtwork();
     if (!art) return;
     art.scale = +document.getElementById('mod-scale').value;
-    document.getElementById('mod-scale-val').textContent = `${art.scale.toFixed(2)}×`;
+    document.getElementById('mod-scale-val').value = art.scale.toFixed(2);
+    refreshModalPreview();
+    renderPreview();
+}
+
+function modalUpdateScaleFromInput(v) {
+    const art = currentEditorArtwork();
+    if (!art) return;
+    art.scale = Math.max(0.1, Math.min(10, +v || 1));
+    document.getElementById('mod-scale').value = art.scale;
     refreshModalPreview();
     renderPreview();
 }
@@ -2827,7 +2896,17 @@ function modalUpdateRotation() {
     const art = currentEditorArtwork();
     if (!art) return;
     art.rotation = +document.getElementById('mod-rot').value;
-    document.getElementById('mod-rot-val').textContent = `${art.rotation}°`;
+    document.getElementById('mod-rot-val').value = art.rotation;
+    refreshModalPreview();
+    renderPreview();
+}
+
+function modalUpdateRotationFromInput(v) {
+    const art = currentEditorArtwork();
+    if (!art) return;
+    art.rotation = Math.max(-360, Math.min(360, +v || 0));
+    // Constrain slider too
+    document.getElementById('mod-rot').value = Math.max(-180, Math.min(180, art.rotation));
     refreshModalPreview();
     renderPreview();
 }
