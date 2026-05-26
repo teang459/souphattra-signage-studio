@@ -770,6 +770,7 @@
             transition: transform 0.1s;
         }
         .pptx-swatch:hover { transform: scale(1.08); border-color: var(--gold); }
+        .pptx-swatch[data-slide=""]::after { display: none; }
         .pptx-swatch::after {
             content: attr(data-slide);
             position: absolute;
@@ -1517,6 +1518,7 @@ function defaultState() {
         hotelLogo: null,
         activeEventTab: 0,
         pptxColors: [],  // [{ slide: 1, color: '#fff', textColor: '#000' }]
+        pptxAllColors: [], // ['#fff', '#000', ...] all unique colors found
         events: [createEvent(1), createEvent(2), createEvent(3)],
         editor: { isOpen: false, eventIdx: null, artworkId: null },
     };
@@ -1636,8 +1638,8 @@ function renderGlobalPanel() {
                         <input type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" style="display:none;" onchange="handlePptxUpload(this.files[0]); this.value='';">
                     </label>
                     ${state.pptxColors.length > 0 ? `
-                        <div style="font-size:10px;color:var(--text-muted);margin-top:6px;">
-                            คลิกที่สีเพื่อใช้กับ event ที่เปิดอยู่ (Event ${state.activeEventTab + 1})
+                        <div style="font-size:10px;color:var(--text-muted);margin-top:8px;font-weight:600;">
+                            🎯 สีพื้นหลังของแต่ละ slide (${state.pptxColors.length}) — คลิกเพื่อใช้กับ Event ${state.activeEventTab + 1}
                         </div>
                         <div class="pptx-palette">
                             ${state.pptxColors.map(c => `
@@ -1648,7 +1650,21 @@ function renderGlobalPanel() {
                                      onclick="applyPptxColorToEvent(${state.activeEventTab}, '${c.color}', '${c.textColor}')"></div>
                             `).join('')}
                         </div>
-                        <button class="btn btn-ghost" style="margin-top:6px;font-size:10px;padding:4px 8px;width:100%;" onclick="autoAssignPptxColors()">
+                        ${state.pptxAllColors && state.pptxAllColors.length > 0 ? `
+                            <div style="font-size:10px;color:var(--text-muted);margin-top:10px;font-weight:600;">
+                                🌈 สีทั้งหมดที่พบใน PPT (${state.pptxAllColors.length})
+                            </div>
+                            <div class="pptx-palette">
+                                ${state.pptxAllColors.map(c => `
+                                    <div class="pptx-swatch"
+                                         style="background:${c};"
+                                         data-slide=""
+                                         title="${c}"
+                                         onclick="applyAnyColorToEvent(${state.activeEventTab}, '${c}')"></div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        <button class="btn btn-ghost" style="margin-top:8px;font-size:10px;padding:4px 8px;width:100%;" onclick="autoAssignPptxColors()">
                             🪄 จับคู่ slide → event อัตโนมัติ
                         </button>
                         <button class="btn btn-danger" style="margin-top:4px;font-size:10px;padding:4px 8px;width:100%;" onclick="clearPptxColors()">
@@ -2441,15 +2457,38 @@ async function handlePptxUpload(file) {
     try {
         const zip = await JSZip.loadAsync(file);
 
-        // Parse theme colors first (for schemeClr references)
+        // 1. Parse all themes
         const themeColors = {};
-        const themeFile = zip.file('ppt/theme/theme1.xml');
-        if (themeFile) {
-            const themeXml = await themeFile.async('string');
-            parseThemeColors(themeXml, themeColors);
+        const themeFiles = Object.keys(zip.files).filter(n => /^ppt\/theme\/theme\d+\.xml$/.test(n));
+        for (const tf of themeFiles) {
+            const xml = await zip.files[tf].async('string');
+            parseThemeColors(xml, themeColors);
         }
 
-        // Find slide files and sort by slide number
+        // 2. Parse slide masters → bg color fallback per master + collect colors
+        const masterBg = {};
+        const allColorSet = new Set();
+        const masterFiles = Object.keys(zip.files).filter(n => /^ppt\/slideMasters\/slideMaster\d+\.xml$/.test(n));
+        for (const mf of masterFiles) {
+            const xml = await zip.files[mf].async('string');
+            const r = extractSlideColors(xml, themeColors);
+            if (r.bgColor) masterBg[mf] = r.bgColor;
+            r.allColors.forEach(c => allColorSet.add(c));
+        }
+        const defaultMasterBg = Object.values(masterBg)[0] || null;
+
+        // 3. Parse slide layouts → collect colors
+        const layoutFiles = Object.keys(zip.files).filter(n => /^ppt\/slideLayouts\/slideLayout\d+\.xml$/.test(n));
+        for (const lf of layoutFiles) {
+            const xml = await zip.files[lf].async('string');
+            const r = extractSlideColors(xml, themeColors);
+            r.allColors.forEach(c => allColorSet.add(c));
+        }
+
+        // 4. Theme accent/scheme colors → add to palette
+        Object.values(themeColors).forEach(c => allColorSet.add(c.toUpperCase()));
+
+        // 5. Slides → per-slide bg + collect colors
         const slideFiles = Object.keys(zip.files)
             .filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))
             .sort((a, b) => {
@@ -2466,17 +2505,26 @@ async function handlePptxUpload(file) {
         const extracted = [];
         for (let i = 0; i < slideFiles.length; i++) {
             const xml = await zip.files[slideFiles[i]].async('string');
-            const color = extractSlideBgColor(xml, themeColors);
+            const r = extractSlideColors(xml, themeColors);
+            const bg = r.bgColor || defaultMasterBg || '#FFFFFF';
             extracted.push({
                 slide: i + 1,
-                color: color,
-                textColor: pickContrastingTextColor(color),
+                color: bg,
+                textColor: pickContrastingTextColor(bg),
             });
+            r.allColors.forEach(c => allColorSet.add(c));
         }
 
+        // Dedup, sort, and cap to first 32 to avoid UI overflow
+        const allColors = [...allColorSet]
+            .filter(c => /^#[0-9A-F]{6}$/i.test(c))
+            .sort()
+            .slice(0, 32);
+
         state.pptxColors = extracted;
+        state.pptxAllColors = allColors;
         renderSidebar();
-        showToast(`แกะสีได้ ${extracted.length} สี — คลิกที่ swatch เพื่อใช้`, 'success');
+        showToast(`พบ ${extracted.length} slide + ${allColors.length} สีทั้งหมด`, 'success');
     } catch (err) {
         console.error(err);
         showToast('เกิดข้อผิดพลาดในการอ่านไฟล์ pptx', 'error');
@@ -2505,29 +2553,67 @@ function parseThemeColors(xml, out) {
     if (out.lt2) { out.bg2 = out.lt2; }
 }
 
-function extractSlideBgColor(xml, themeColors) {
+// Returns { bgColor: '#XXXXXX' | null, allColors: ['#XXXXXX', ...] }
+// Accurate bg detection: <p:bg> first, then full-slide rectangle shapes
+function extractSlideColors(xml, themeColors) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(xml, 'text/xml');
+    const allColors = new Set();
+    let bgColor = null;
 
-    // 1. Try <p:bg> element directly
+    // 1. Direct <p:bg>
     const bg = doc.getElementsByTagNameNS('*', 'bg')[0];
     if (bg) {
-        const color = findColorIn(bg, themeColors);
-        if (color) return color;
+        const c = findColorIn(bg, themeColors);
+        if (c) bgColor = c;
     }
 
-    // 2. Try first solid-fill shape (often a full-slide rectangle used as bg)
-    const shapes = doc.getElementsByTagNameNS('*', 'sp');
-    for (const shape of shapes) {
-        const fill = shape.getElementsByTagNameNS('*', 'solidFill')[0];
-        if (fill) {
-            const color = findColorIn(fill, themeColors);
-            if (color) return color;
+    const shapes = Array.from(doc.getElementsByTagNameNS('*', 'sp'));
+
+    // 2. Full-slide rectangle (often used as a background)
+    //    PowerPoint default slide: 9144000 × 6858000 EMU (or 12192000 × 6858000 for widescreen)
+    if (!bgColor) {
+        for (const shape of shapes) {
+            const xfrm = shape.getElementsByTagNameNS('*', 'xfrm')[0];
+            if (!xfrm) continue;
+            const ext = xfrm.getElementsByTagNameNS('*', 'ext')[0];
+            const off = xfrm.getElementsByTagNameNS('*', 'off')[0];
+            if (!ext || !off) continue;
+            const cx = parseInt(ext.getAttribute('cx') || '0');
+            const cy = parseInt(ext.getAttribute('cy') || '0');
+            const x = parseInt(off.getAttribute('x') || '0');
+            const y = parseInt(off.getAttribute('y') || '0');
+            // Covers >85% of typical slide and starts at origin
+            if (cx > 8000000 && cy > 5800000 && x < 300000 && y < 300000) {
+                const fill = shape.getElementsByTagNameNS('*', 'solidFill')[0];
+                if (fill) {
+                    const c = findColorIn(fill, themeColors);
+                    if (c) { bgColor = c; break; }
+                }
+            }
         }
     }
 
-    // 3. Default white
-    return '#FFFFFF';
+    // 3. Collect EVERY solid-fill color from shapes
+    for (const shape of shapes) {
+        const fills = shape.getElementsByTagNameNS('*', 'solidFill');
+        for (const fill of fills) {
+            const c = findColorIn(fill, themeColors);
+            if (c) allColors.add(c);
+        }
+    }
+
+    // 4. Collect text run colors
+    const rPrs = doc.getElementsByTagNameNS('*', 'rPr');
+    for (const rPr of rPrs) {
+        const fill = rPr.getElementsByTagNameNS('*', 'solidFill')[0];
+        if (fill) {
+            const c = findColorIn(fill, themeColors);
+            if (c) allColors.add(c);
+        }
+    }
+
+    return { bgColor, allColors: [...allColors] };
 }
 
 function findColorIn(el, themeColors) {
@@ -2567,6 +2653,10 @@ function applyPptxColorToEvent(eventIdx, color, textColor) {
     showToast(`ใช้สี ${color} กับ Event ${eventIdx + 1}`, 'success');
 }
 
+function applyAnyColorToEvent(eventIdx, color) {
+    applyPptxColorToEvent(eventIdx, color, pickContrastingTextColor(color));
+}
+
 function autoAssignPptxColors() {
     const cap = MODE_CAPS[state.mode];
     const colors = state.pptxColors;
@@ -2583,6 +2673,7 @@ function autoAssignPptxColors() {
 
 function clearPptxColors() {
     state.pptxColors = [];
+    state.pptxAllColors = [];
     renderSidebar();
     showToast('ล้างสีที่แกะมาแล้ว');
 }
