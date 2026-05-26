@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/earlyaccess/phetsaratott.css" rel="stylesheet">
 
     <style>
@@ -59,8 +59,8 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        .hotel-title { font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif; letter-spacing: 0.15em; }
-        .serif-text  { font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif; }
+        .hotel-title { font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif; letter-spacing: 0.15em; }
+        .serif-text  { font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif; }
         .lao-text    { font-family: 'Phetsarath OT', 'Noto Sans Lao', sans-serif; }
 
         button { font-family: inherit; }
@@ -638,48 +638,52 @@
             margin-top: 4px;
         }
         .ornament-icon {
-            width: var(--logo-size, 200px); height: calc(var(--logo-size, 200px) * 0.88);
-            margin: 0 auto 8px;
+            width: var(--logo-size, 90px); height: calc(var(--logo-size, 90px) * 0.95);
+            margin: 0 auto 4px;
             display: block;
             color: #1a1a1a;
             transition: color 0.3s, width 0.2s, height 0.2s;
             object-fit: contain;
         }
         .hotel-logo-img {
-            width: var(--logo-size, 200px); height: calc(var(--logo-size, 200px) * 0.88);
-            margin: 0 auto 8px;
+            width: var(--logo-size, 90px); height: calc(var(--logo-size, 90px) * 0.95);
+            margin: 0 auto 4px;
             display: block;
             object-fit: contain;
             transition: width 0.2s, height 0.2s;
         }
         .hotel-name-main {
-            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
-            font-weight: 700;
-            font-size: 36px;
-            letter-spacing: 0.2em;
+            font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+            font-weight: 600;
+            font-size: 38px;
+            letter-spacing: 0.22em;
             text-transform: uppercase;
             color: #1a1a1a;
-            line-height: 1.1;
+            line-height: 1.05;
             transition: color 0.3s;
+            padding-left: 0.22em;
         }
         .hotel-name-sub {
-            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
-            font-weight: 600;
-            font-size: 22px;
-            letter-spacing: 0.1em;
+            font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+            font-weight: 500;
+            font-size: 26px;
+            letter-spacing: 0.18em;
             text-transform: uppercase;
             color: #1a1a1a;
-            margin-top: 4px;
+            margin-top: 2px;
             transition: color 0.3s;
+            padding-left: 0.18em;
         }
         .hotel-city {
-            font-size: 16px;
-            letter-spacing: 0.45em;
-            color: var(--gold);
+            font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+            font-size: 14px;
+            letter-spacing: 0.5em;
+            color: #1a1a1a;
             text-transform: uppercase;
-            font-weight: 600;
-            margin-top: 6px;
-            padding-left: 0.45em;
+            font-weight: 500;
+            margin-top: 8px;
+            padding-left: 0.5em;
+            transition: color 0.3s;
         }
 
         .sign-workspace {
@@ -866,10 +870,10 @@
             margin: 0;
         }
         .event-title-en {
-            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
-            font-weight: 500;
+            font-family: 'Inter', 'Playfair Display', Arial, sans-serif;
+            font-weight: 600;
             line-height: 1.35;
-            opacity: 0.85;
+            opacity: 0.9;
             margin: 0;
             white-space: pre-line;
         }
@@ -889,37 +893,42 @@
             margin: 4px 0;
         }
         .detail-floor {
-            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
             font-weight: 700;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.005em;
             line-height: 1;
             text-align: center;
         }
         .detail-floor sup {
-            font-size: 0.45em;
+            font-size: 0.42em;
             font-weight: 500;
             vertical-align: super;
             margin-left: 1px;
+            font-style: italic;
         }
         .detail-room {
-            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
             font-weight: 500;
             text-align: center;
-            color: var(--gold);
+            color: inherit;
             line-height: 1.2;
         }
         .detail-date {
-            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+            text-align: center;
+            opacity: 0.92;
+            line-height: 1.3;
+        }
+        .detail-date sup {
+            font-size: 0.55em;
+            vertical-align: super;
+            margin-left: 1px;
+        }
+        .detail-time {
+            font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
             text-align: center;
             opacity: 0.85;
             line-height: 1.3;
-        }
-        .detail-time {
-            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
-            text-align: center;
-            opacity: 0.75;
-            line-height: 1.3;
-            font-style: italic;
         }
 
         /* Details columns */
@@ -951,17 +960,17 @@
             margin-bottom: 2px;
         }
         .col-value {
-            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
             font-weight: 600;
             display: block;
             line-height: 1.1;
         }
-        .col-value.gold { color: var(--gold); }
+        .col-value.gold { color: inherit; }
         .col-sub {
             display: block;
             font-size: 9px;
-            opacity: 0.7;
-            font-family: 'Myriad Pro', 'Trebuchet MS', Arial, sans-serif;
+            opacity: 0.75;
+            font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
             margin-top: 1px;
         }
 
@@ -1246,7 +1255,9 @@
                         <path d="M 50 10 L 50 90 M 10 50 L 90 50" />
                         <rect x="35" y="35" width="30" height="30" class="ornament-fill" fill="#FAF9F5" transform="rotate(45 50 50)" />
                     </svg>
-                    
+                    <div class="hotel-name-main" id="hotel-name-main">SOUPHATTRA</div>
+                    <div class="hotel-name-sub" id="hotel-name-sub">HOTEL</div>
+                    <div class="hotel-city" id="hotel-city">VIENTIANE</div>
                 </header>
 
                 <div id="preview-workspace" class="sign-workspace">
@@ -1496,8 +1507,9 @@ function defaultState() {
         showBorder: true,
         showWatermark: true,
         showFooter: true,
+        showHotelName: true,
         canvasPadding: 24,
-        headerLogoSize: 200,
+        headerLogoSize: 90,
         footerSize: 14,
         boxOffsetY: 0,
         zoom: 0.3,
@@ -1674,10 +1686,10 @@ function renderGlobalPanel() {
 
                 <div class="field">
                     <label class="field-label">
-                        ขนาดโลโก้หัวป้าย (Header Logo)
+                        ขนาด Ornament/โลโก้หัวป้าย
                         <span id="lbl-logo-size" style="float:right;font-family:monospace;color:var(--gold);">${state.headerLogoSize}px</span>
                     </label>
-                    <input type="range" class="slider" min="60" max="400" value="${state.headerLogoSize}" oninput="adjustHeaderLogoSize(this.value)">
+                    <input type="range" class="slider" min="40" max="400" value="${state.headerLogoSize}" oninput="adjustHeaderLogoSize(this.value)">
                 </div>
 
                 <div class="field">
@@ -1708,6 +1720,10 @@ function renderGlobalPanel() {
                 <label class="check-row">
                     <input type="checkbox" ${state.showFooter ? 'checked' : ''} onchange="toggleFooter()">
                     แสดง Footer (❖ ❖ ❖)
+                </label>
+                <label class="check-row">
+                    <input type="checkbox" ${state.showHotelName ? 'checked' : ''} onchange="toggleHotelName()">
+                    แสดงข้อความ "SOUPHATTRA HOTEL VIENTIANE"
                 </label>
             </div>
         </div>
@@ -2172,15 +2188,26 @@ function applyTheme() {
     wm.style.opacity = state.showWatermark ? t.wmOpacity : 0;
     ornament.style.color = t.textColor;
     document.querySelectorAll('.ornament-fill').forEach(el => el.setAttribute('fill', t.goldFill));
-    document.querySelectorAll('.hotel-name-main, .hotel-name-sub').forEach(el => el.style.color = t.textColor);
+    document.querySelectorAll('.hotel-name-main, .hotel-name-sub, .hotel-city').forEach(el => el.style.color = t.textColor);
+
+    const nameMain = document.getElementById('hotel-name-main');
+    const nameSub = document.getElementById('hotel-name-sub');
+    const city = document.getElementById('hotel-city');
 
     if (state.hotelLogo) {
         logoImg.src = state.hotelLogo;
         logoImg.style.display = 'block';
         ornament.style.display = 'none';
+        // Hide text when user uploads their own logo (likely includes branding)
+        if (nameMain) nameMain.style.display = 'none';
+        if (nameSub) nameSub.style.display = 'none';
+        if (city) city.style.display = 'none';
     } else {
         logoImg.style.display = 'none';
         ornament.style.display = 'block';
+        if (nameMain) nameMain.style.display = state.showHotelName ? '' : 'none';
+        if (nameSub) nameSub.style.display = state.showHotelName ? '' : 'none';
+        if (city) city.style.display = state.showHotelName ? '' : 'none';
     }
 }
 
@@ -2232,6 +2259,11 @@ function toggleFooter() {
     state.showFooter = !state.showFooter;
     const footer = document.querySelector('.sign-footer');
     if (footer) footer.style.display = state.showFooter ? '' : 'none';
+}
+
+function toggleHotelName() {
+    state.showHotelName = !state.showHotelName;
+    applyTheme();
 }
 
 function handleBgUpload(file) {
