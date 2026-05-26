@@ -3018,11 +3018,18 @@ async function exportAsPNG() {
         // html-to-image uses the browser's native renderer via SVG
         // foreignObject — so grid layout, object-fit, CSS variables,
         // transforms, and webfonts all render identically to the preview.
+        //
+        // skipFonts: true → don't try to fetch + embed webfont files
+        // (Google Fonts CSS blocks cross-origin reads on /earlyaccess/* and
+        // sometimes on css2 too, which throws an Event error). The browser
+        // still has the fonts loaded in memory, so the foreignObject
+        // rasterizes with the correct typeface anyway.
         const dataUrl = await htmlToImage.toPng(canvas, {
             width: outW,
             height: outH,
             pixelRatio: 1,
-            cacheBust: true,
+            cacheBust: false,
+            skipFonts: true,
             backgroundColor: null,
             style: {
                 transform: 'none',
@@ -3035,8 +3042,13 @@ async function exportAsPNG() {
         link.click();
         showToast(`บันทึก PNG ${outW}×${outH}px สำเร็จ!`, 'success');
     } catch (err) {
-        console.error(err);
-        showToast('เกิดข้อผิดพลาด: ' + (err.message || err), 'error');
+        console.error('Export error:', err);
+        // err may be an Error, an Event (image load failure), or a string.
+        let msg;
+        if (err instanceof Error)        msg = err.message;
+        else if (err instanceof Event)   msg = `Resource failed: ${err.target?.src || err.target?.href || err.type}`;
+        else                              msg = String(err);
+        showToast('เกิดข้อผิดพลาด: ' + msg, 'error');
     } finally {
         canvas.style.transform = prev.transform;
         canvas.style.transition = prev.transition;
