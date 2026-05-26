@@ -841,6 +841,18 @@
             gap: 8px;
             justify-content: space-between;
             flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Per-event background photo layer */
+        .event-photo-bg {
+            position: absolute;
+            inset: 0;
+            background-repeat: no-repeat;
+            background-position: center;
+            pointer-events: none;
+            z-index: 0;
         }
         .event-card.mode-single .event-card-inner { padding: 24px 28px; gap: 14px; }
         .event-card.mode-triple .event-card-inner { padding: 10px 14px; gap: 6px; }
@@ -1479,6 +1491,15 @@ function createEvent(num) {
         customFg: '#1a1a1a',
         layoutStyle: 'stacked',
         artworkAlignment: 'center',
+        // Per-event border (independent from global gold frame)
+        borderShow: true,
+        borderColor: '#A8895E',
+        borderWidth: 2,
+        borderRadius: 5,
+        // Per-event background photo
+        photo: null,
+        photoFit: 'cover',
+        photoOpacity: 1,
         artworks: [],
     };
 
@@ -1885,6 +1906,74 @@ function renderEventConfigPanel(idx) {
             </div>
         </div>
 
+        <!-- Per-event Border -->
+        <div class="panel" style="margin-top:14px;">
+            <div class="panel-title">▢ ขอบกล่องงานนี้ (Event Border)</div>
+            <div class="panel-card">
+                <label class="check-row">
+                    <input type="checkbox" ${ev.borderShow ? 'checked' : ''} onchange="updateField(${idx}, 'borderShow', this.checked)">
+                    แสดงเส้นขอบกล่องงาน
+                </label>
+                ${ev.borderShow ? `
+                    <div class="field" style="margin-top:6px;">
+                        <label class="field-label">สีขอบ (Border Color)</label>
+                        <div class="color-picker-row">
+                            <input type="color" value="${ev.borderColor || '#A8895E'}" oninput="updateField(${idx}, 'borderColor', this.value); this.nextElementSibling.value = this.value;" title="สีขอบ">
+                            <input type="text" class="input" style="font-family:monospace;font-size:11px;" value="${ev.borderColor || '#A8895E'}" oninput="updateField(${idx}, 'borderColor', this.value); this.previousElementSibling.value = this.value;" placeholder="#RRGGBB">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">ความหนา (Width)</label>
+                        <div class="slider-row">
+                            <input type="range" class="slider" min="0" max="30" value="${ev.borderWidth ?? 2}" oninput="updateField(${idx}, 'borderWidth', +this.value); this.nextElementSibling.value = this.value;">
+                            <input type="number" class="slider-value" min="0" max="60" value="${ev.borderWidth ?? 2}" oninput="updateField(${idx}, 'borderWidth', +this.value); this.previousElementSibling.value = this.value;">
+                        </div>
+                    </div>
+                ` : ''}
+                <div class="field">
+                    <label class="field-label">ความโค้งมุม (Border Radius)</label>
+                    <div class="slider-row">
+                        <input type="range" class="slider" min="0" max="60" value="${ev.borderRadius ?? 5}" oninput="updateField(${idx}, 'borderRadius', +this.value); this.nextElementSibling.value = this.value;">
+                        <input type="number" class="slider-value" min="0" max="120" value="${ev.borderRadius ?? 5}" oninput="updateField(${idx}, 'borderRadius', +this.value); this.previousElementSibling.value = this.value;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Per-event Background Photo -->
+        <div class="panel" style="margin-top:14px;">
+            <div class="panel-title">📷 ภาพพื้นหลังกล่องงาน (Event Photo)</div>
+            <div class="panel-card">
+                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                    <button class="btn btn-secondary" style="flex:1;min-width:120px;" onclick="document.getElementById('event-photo-input-${idx}').click()">
+                        📷 ${ev.photo ? 'เปลี่ยนภาพ' : 'อัปโหลดภาพ'}
+                    </button>
+                    ${ev.photo ? `<button class="btn btn-danger" style="padding:6px 10px;font-size:11px;" onclick="clearEventPhoto(${idx})">✕ ลบ</button>` : ''}
+                    <input type="file" id="event-photo-input-${idx}" accept="image/*" style="display:none;" onchange="handleEventPhotoUpload(${idx}, this.files[0]); this.value='';">
+                </div>
+                ${ev.photo ? `
+                    <div style="margin-top:8px;">
+                        <img src="${ev.photo}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--surface-4);">
+                    </div>
+                    <div class="field" style="margin-top:8px;">
+                        <label class="field-label">การจัดวางภาพ (Photo Fit)</label>
+                        <div class="segmented">
+                            <button class="seg-btn ${(ev.photoFit || 'cover') === 'cover' ? 'active' : ''}" onclick="updateField(${idx}, 'photoFit', 'cover')">⛶ Cover</button>
+                            <button class="seg-btn ${ev.photoFit === 'contain' ? 'active' : ''}" onclick="updateField(${idx}, 'photoFit', 'contain')">▭ Contain</button>
+                            <button class="seg-btn ${ev.photoFit === '100% 100%' ? 'active' : ''}" onclick="updateField(${idx}, 'photoFit', '100% 100%')">⬛ Stretch</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">ความทึบของภาพ (Opacity) — ลดให้ข้อความอ่านง่าย</label>
+                        <div class="slider-row">
+                            <input type="range" class="slider" min="0" max="100" value="${Math.round((ev.photoOpacity ?? 1) * 100)}" oninput="updateField(${idx}, 'photoOpacity', +this.value / 100); this.nextElementSibling.value = this.value;">
+                            <input type="number" class="slider-value" min="0" max="100" value="${Math.round((ev.photoOpacity ?? 1) * 100)}" oninput="updateField(${idx}, 'photoOpacity', +this.value / 100); this.previousElementSibling.value = this.value;">
+                        </div>
+                    </div>
+                ` : `<div style="font-size:10px;color:var(--text-muted);margin-top:6px;">อัปโหลดภาพเพื่อใช้เป็นพื้นหลังของกล่องงานนี้ (ข้อความจะอยู่ด้านหน้า)</div>`}
+            </div>
+        </div>
+
         <!-- Artwork Manager -->
         <div class="panel" style="margin-top:14px;">
             <div class="panel-title">🎨 จัดการ Artwork / โลโก้</div>
@@ -2099,6 +2188,24 @@ function renderEventCard(ev, idx) {
     if (ev.bgStyle === 'custom') {
         card.style.setProperty('--custom-bg', ev.customBg);
         card.style.setProperty('--custom-fg', ev.customFg);
+    }
+
+    // Per-event border (overrides default .event-card border)
+    if (ev.borderShow) {
+        card.style.border = `${ev.borderWidth ?? 2}px solid ${ev.borderColor || '#A8895E'}`;
+    } else {
+        card.style.border = 'none';
+    }
+    card.style.borderRadius = `${ev.borderRadius ?? 5}px`;
+
+    // Per-event background photo layer
+    if (ev.photo) {
+        const photoBg = document.createElement('div');
+        photoBg.className = 'event-photo-bg';
+        photoBg.style.backgroundImage = `url("${ev.photo}")`;
+        photoBg.style.backgroundSize = ev.photoFit || 'cover';
+        photoBg.style.opacity = ev.photoOpacity ?? 1;
+        card.appendChild(photoBg);
     }
 
     const inner = document.createElement('div');
@@ -2457,9 +2564,29 @@ function updateField(idx, field, value) {
     state.events[idx][field] = value;
     renderPreview();
     // re-render sidebar only when toggle-like field that affects sidebar
-    if (['bgStyle', 'layoutStyle', 'artworkAlignment'].includes(field)) {
+    if (['bgStyle', 'layoutStyle', 'artworkAlignment', 'borderShow', 'photoFit'].includes(field)) {
         renderSidebar();
     }
+}
+
+function handleEventPhotoUpload(idx, file) {
+    if (!file || !file.type.startsWith('image/')) { showToast('ไม่ใช่ไฟล์ภาพ', 'error'); return; }
+    if (file.size > 5 * 1024 * 1024) { showToast('ไฟล์ใหญ่เกิน 5MB', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+        state.events[idx].photo = e.target.result;
+        renderPreview();
+        renderSidebar();
+        showToast('เพิ่มภาพพื้นหลังของกล่องงานแล้ว', 'success');
+    };
+    reader.readAsDataURL(file);
+}
+
+function clearEventPhoto(idx) {
+    state.events[idx].photo = null;
+    renderPreview();
+    renderSidebar();
+    showToast('ลบภาพพื้นหลังของกล่องงานแล้ว');
 }
 
 function updateTitle(idx, lang, value) {
