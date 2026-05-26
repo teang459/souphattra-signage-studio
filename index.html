@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Cinzel:wght@400;500;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/earlyaccess/phetsaratott.css" rel="stylesheet">
 
     <style>
@@ -59,9 +59,24 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        .hotel-title { font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif; letter-spacing: 0.15em; }
-        .serif-text  { font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif; }
+        .sign-canvas { --serif-font: 'Playfair Display'; }
+        .hotel-title { font-family: var(--serif-font, 'Playfair Display'), 'Cormorant Garamond', Georgia, serif; letter-spacing: 0.15em; }
+        .serif-text  { font-family: var(--serif-font, 'Playfair Display'), 'Cormorant Garamond', Georgia, serif; }
         .lao-text    { font-family: 'Phetsarath OT', 'Noto Sans Lao', sans-serif; }
+
+        /* All serif elements use the dynamic font variable */
+        .hotel-name-main,
+        .hotel-name-sub,
+        .hotel-city,
+        .detail-floor,
+        .detail-room,
+        .detail-date,
+        .detail-time,
+        .col-value,
+        .col-sub,
+        .event-title-en {
+            font-family: var(--serif-font, 'Playfair Display'), 'Cormorant Garamond', Georgia, serif !important;
+        }
 
         button { font-family: inherit; }
         a { color: var(--gold); text-decoration: none; }
@@ -1513,6 +1528,7 @@ function defaultState() {
         headerLogoSize: 110,
         footerSize: 14,
         boxOffsetY: 0,
+        fontFamily: 'Playfair Display',
         zoom: 0.3,
         bgImage: null,
         hotelLogo: null,
@@ -1616,6 +1632,26 @@ function renderGlobalPanel() {
                         <button class="theme-btn sepia ${state.theme === 'sepia' ? 'active' : ''}" onclick="setTheme('sepia')">
                             <div class="swatch" style="background:#F5F2EB;"></div>📜 ครีม
                         </button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">ฟอนต์หลัก (Heading & Body Serif Font)</label>
+                    <select class="select" onchange="setFont(this.value)">
+                        ${[
+                            'Playfair Display',
+                            'Cormorant Garamond',
+                            'Cormorant',
+                            'EB Garamond',
+                            'Cinzel',
+                            'Crimson Text',
+                            'Libre Caslon Text',
+                            'Georgia',
+                            'Times New Roman',
+                        ].map(f => `<option value="${f}" ${state.fontFamily === f ? 'selected' : ''} style="font-family:'${f}', Georgia, serif;">${f}</option>`).join('')}
+                    </select>
+                    <div style="margin-top:6px;padding:8px 10px;background:var(--surface-2);border-radius:6px;font-family:'${state.fontFamily}', Georgia, serif;font-size:18px;font-weight:600;text-align:center;color:var(--text-primary);">
+                        2<sup style="font-style:italic;font-size:0.55em;">nd</sup> Floor — Aa Bb 123
                     </div>
                 </div>
 
@@ -2174,6 +2210,13 @@ function setTheme(t) {
     showToast(`เปลี่ยนธีม: ${t === 'light' ? 'สว่าง' : t === 'dark' ? 'มืด' : 'ครีม'}`);
 }
 
+function setFont(fontName) {
+    state.fontFamily = fontName;
+    document.getElementById('sign-canvas').style.setProperty('--serif-font', `"${fontName}"`);
+    renderSidebar();
+    showToast(`เปลี่ยนฟอนต์: ${fontName}`);
+}
+
 function applyTheme() {
     const t = BG_THEMES[state.theme];
     const canvas = document.getElementById('sign-canvas');
@@ -2185,6 +2228,7 @@ function applyTheme() {
     canvas.style.setProperty('--logo-size', `${state.headerLogoSize}px`);
     canvas.style.setProperty('--footer-size', `${state.footerSize}px`);
     canvas.style.setProperty('--box-offset-y', `${state.boxOffsetY}px`);
+    canvas.style.setProperty('--serif-font', `"${state.fontFamily}"`);
 
     const footer = document.querySelector('.sign-footer');
     if (footer) footer.style.display = state.showFooter ? '' : 'none';
@@ -2940,51 +2984,53 @@ async function exportAsPNG() {
     }
     showToast('กำลังเตรียม PNG... กรุณารอสักครู่');
 
-    // Wait for all fonts (Playfair, Phetsarath, etc.) to be loaded.
-    // Without this, the exported image renders with fallback fonts → looks wrong.
+    // Wait for fonts (Playfair, Phetsarath, etc.) to be ready,
+    // otherwise the export renders with fallback fonts.
     if (document.fonts && document.fonts.ready) {
         try { await document.fonts.ready; } catch (e) {}
     }
+    // Small delay so any pending layout/transition settles.
+    await new Promise(r => setTimeout(r, 80));
 
     const canvas = document.getElementById('sign-canvas');
     const outW = state.orientation === 'portrait' ? 1080 : 1920;
     const outH = state.orientation === 'portrait' ? 1920 : 1080;
 
-    // Build a clean off-screen container so the rest of the page layout
-    // (sidebar, scroll wrappers, zoom transform) can't interfere with capture.
+    // Off-screen stage. Use `left: -99999px` (NOT opacity:0 — that makes
+    // the captured pixels transparent).
     const stage = document.createElement('div');
     stage.style.cssText = `
         position: fixed;
-        left: 0;
+        left: -99999px;
         top: 0;
         width: ${outW}px;
         height: ${outH}px;
-        z-index: -1;
-        opacity: 0;
-        pointer-events: none;
-        overflow: visible;
+        background: transparent;
     `;
 
     const clone = canvas.cloneNode(true);
     clone.style.transform = 'none';
-    clone.style.position = 'relative';
+    clone.style.position = 'static';
+    clone.style.margin = '0';
     clone.style.boxShadow = 'none';
+    clone.style.transition = 'none';
+    // Force the clone to its full output size regardless of CSS class state
     clone.style.width = `${outW}px`;
     clone.style.height = `${outH}px`;
     stage.appendChild(clone);
     document.body.appendChild(stage);
 
-    // Force a reflow so the clone has correct dimensions before capture
+    // Reflow + second tick so CSS variables + custom properties apply on the clone
     void clone.offsetHeight;
+    await new Promise(r => requestAnimationFrame(r));
 
     try {
         const snapshot = await html2canvas(clone, {
             scale: 1,
             useCORS: true,
+            allowTaint: true,
             backgroundColor: null,
             logging: false,
-            width: outW,
-            height: outH,
         });
         const link = document.createElement('a');
         link.download = `Souphattra_Sign_${outW}x${outH}_${Date.now()}.png`;
@@ -2993,7 +3039,7 @@ async function exportAsPNG() {
         showToast(`บันทึก PNG ${outW}×${outH}px สำเร็จ!`, 'success');
     } catch (err) {
         console.error(err);
-        showToast('เกิดข้อผิดพลาดในการ export', 'error');
+        showToast('เกิดข้อผิดพลาดในการ export: ' + err.message, 'error');
     } finally {
         document.body.removeChild(stage);
     }
