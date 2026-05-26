@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Souphattra Signage Studio — Vientiane</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2978,13 +2978,14 @@ function triggerPrint() {
 }
 
 async function exportAsPNG() {
-    if (typeof html2canvas === 'undefined') {
-        showToast('ไลบรารี html2canvas ไม่พร้อม', 'error');
+    if (typeof htmlToImage === 'undefined') {
+        showToast('ไลบรารี html-to-image ไม่พร้อม', 'error');
         return;
     }
     showToast('กำลังเตรียม PNG... กรุณารอ');
 
-    // Wait for fonts (Playfair, Phetsarath, etc.) to be fully loaded.
+    // Wait for all webfonts to be ready (Playfair Display, Phetsarath OT,
+    // Cinzel, etc.). Without this, the foreignObject snapshot uses fallback.
     if (document.fonts && document.fonts.ready) {
         try { await document.fonts.ready; } catch (e) {}
     }
@@ -2994,9 +2995,7 @@ async function exportAsPNG() {
     const outW = state.orientation === 'portrait' ? 1080 : 1920;
     const outH = state.orientation === 'portrait' ? 1920 : 1080;
 
-    // Save state, then un-zoom the actual canvas (no cloning — that lost
-    // CSS-variable values + broke absolute-positioned children like border
-    // and watermark).
+    // Save state, un-zoom canvas so it renders at its true 1080×1920 size.
     const prev = {
         transform: canvas.style.transform,
         transition: canvas.style.transition,
@@ -3010,33 +3009,34 @@ async function exportAsPNG() {
     wrap.style.overflow = 'visible';
     wrap.style.padding = '0';
 
-    // Two frames so the layout fully settles before capture.
+    // Two RAFs + small timeout so layout fully settles after un-zoom.
     await new Promise(r => requestAnimationFrame(r));
     await new Promise(r => requestAnimationFrame(r));
     await new Promise(r => setTimeout(r, 50));
 
     try {
-        const snapshot = await html2canvas(canvas, {
-            scale: 1,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: null,
-            logging: false,
-            // Capture the element exactly at its natural rendered size.
+        // html-to-image uses the browser's native renderer via SVG
+        // foreignObject — so grid layout, object-fit, CSS variables,
+        // transforms, and webfonts all render identically to the preview.
+        const dataUrl = await htmlToImage.toPng(canvas, {
             width: outW,
             height: outH,
-            scrollX: 0,
-            scrollY: 0,
+            pixelRatio: 1,
+            cacheBust: true,
+            backgroundColor: null,
+            style: {
+                transform: 'none',
+                margin: '0',
+            },
         });
-
         const link = document.createElement('a');
-        link.download = `Souphattra_Sign_${snapshot.width}x${snapshot.height}_${Date.now()}.png`;
-        link.href = snapshot.toDataURL('image/png');
+        link.download = `Souphattra_Sign_${outW}x${outH}_${Date.now()}.png`;
+        link.href = dataUrl;
         link.click();
-        showToast(`บันทึก PNG ${snapshot.width}×${snapshot.height}px สำเร็จ!`, 'success');
+        showToast(`บันทึก PNG ${outW}×${outH}px สำเร็จ!`, 'success');
     } catch (err) {
         console.error(err);
-        showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+        showToast('เกิดข้อผิดพลาด: ' + (err.message || err), 'error');
     } finally {
         canvas.style.transform = prev.transform;
         canvas.style.transition = prev.transition;
