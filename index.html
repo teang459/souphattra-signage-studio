@@ -1582,7 +1582,14 @@ function renderGlobalPanel() {
                         ระยะขอบป้าย (Canvas Padding)
                         <span id="lbl-padding" style="float:right;font-family:monospace;color:var(--gold);">${state.canvasPadding}px</span>
                     </label>
-                    <input type="range" class="slider" min="8" max="80" value="${state.canvasPadding}" oninput="adjustPadding(this.value)">
+                    <input type="range" class="slider" min="0" max="400" value="${state.canvasPadding}" oninput="adjustPadding(this.value)">
+                    <div style="display:flex;gap:4px;margin-top:6px;">
+                        <input type="number" class="input" style="flex:1;font-size:11px;padding:4px 8px;" min="0" max="500" value="${state.canvasPadding}" oninput="adjustPadding(this.value); this.parentElement.previousElementSibling.value = this.value;" title="พิมพ์ตัวเลขเองได้">
+                        <button class="btn btn-ghost" style="padding:4px 8px;font-size:10px;" onclick="adjustPadding(0)">0</button>
+                        <button class="btn btn-ghost" style="padding:4px 8px;font-size:10px;" onclick="adjustPadding(24)">24</button>
+                        <button class="btn btn-ghost" style="padding:4px 8px;font-size:10px;" onclick="adjustPadding(80)">80</button>
+                        <button class="btn btn-ghost" style="padding:4px 8px;font-size:10px;" onclick="adjustPadding(200)">200</button>
+                    </div>
                 </div>
 
                 <div class="field">
@@ -2093,10 +2100,15 @@ function toggleWatermark() {
 }
 
 function adjustPadding(v) {
-    state.canvasPadding = +v;
-    document.getElementById('sign-canvas').style.padding = `${v}px`;
+    const n = Math.max(0, Math.min(500, +v || 0));
+    state.canvasPadding = n;
+    document.getElementById('sign-canvas').style.padding = `${n}px`;
     const lbl = document.getElementById('lbl-padding');
-    if (lbl) lbl.textContent = `${v}px`;
+    if (lbl) lbl.textContent = `${n}px`;
+    // Sync slider and number input
+    document.querySelectorAll('input[oninput*="adjustPadding"]').forEach(input => {
+        if (+input.value !== n) input.value = n;
+    });
 }
 
 function adjustHeaderLogoSize(v) {
